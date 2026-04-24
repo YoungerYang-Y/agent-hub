@@ -1,0 +1,22 @@
+{
+  "name": "agent-hub",
+  "version": "0.1.0",
+  "description": "Personal AI agent configuration hub and copy-based installer.",
+  "type": "module",
+  "bin": {
+    "agent-hub": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run tests",
+    "check": "npm run build && npm test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "typescript": "*",
+    "vitest": "*"
+  }
+}
