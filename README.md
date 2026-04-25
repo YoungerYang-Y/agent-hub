@@ -23,9 +23,11 @@ npm install
 npm run build
 node dist/cli.js list
 node dist/cli.js doctor codex
+node dist/cli.js status codex
 node dist/cli.js install codex --dry-run
 node dist/cli.js install codex
 node dist/cli.js update codex
+node dist/cli.js uninstall codex --dry-run
 ```
 
 ## 配置目录
@@ -41,6 +43,23 @@ node dist/cli.js update codex
 ```bash
 node dist/cli.js install codex --config-dir /tmp/codex-config
 ```
+
+## 管理已安装资源
+
+安装会在目标配置目录写入 `.agent-hub-manifest.json`，只记录由 agent-hub 管理的资源。
+
+```bash
+# 查看 Codex 目标下的受管资源状态、目标是否存在、hash 是否漂移
+node dist/cli.js status codex
+
+# 预览卸载所有由 agent-hub 管理的 Codex 资源
+node dist/cli.js uninstall codex --dry-run
+
+# 只卸载单个受管资源
+node dist/cli.js uninstall codex --resource harness-engineering
+```
+
+`uninstall` 只删除 manifest 中记录的受管目标，不会删除未由 agent-hub 管理的本地文件。
 
 ## 添加内容
 
