@@ -1,7 +1,8 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { runStatus } from "../src/commands/status.js";
+import { runUninstall } from "../src/commands/uninstall.js";
 import { hashPath } from "../src/core/hash.js";
 import { managedManifestPath, writeManagedManifest } from "../src/core/managed-manifest.js";
 
@@ -51,6 +52,42 @@ describe("commands", () => {
     expect(output).toContain("present");
     expect(output).toContain("current");
   });
+
+  test("uninstall dry-run leaves managed files and manifest unchanged", () => {
+    const fixture = makeCommandFixture("uninstall-dry-run");
+    seedManagedSkill(fixture, "demo");
+
+    const output = captureLogs(() => runUninstall(fixture.root, "codex", { configDir: fixture.configDir, dryRun: true }));
+
+    expect(output).toContain("Planned removal");
+    expect(existsSync(join(fixture.configDir, "skills/demo/SKILL.md"))).toBe(true);
+    expect(readFileSync(managedManifestPath(fixture.configDir), "utf-8")).toContain("\"demo\"");
+  });
+
+  test("uninstall removes managed destinations and manifest entries", () => {
+    const fixture = makeCommandFixture("uninstall");
+    seedManagedSkill(fixture, "demo");
+
+    const output = captureLogs(() => runUninstall(fixture.root, "codex", { configDir: fixture.configDir, dryRun: false }));
+
+    expect(output).toContain("Removed 1 managed resource");
+    expect(existsSync(join(fixture.configDir, "skills/demo"))).toBe(false);
+    expect(readFileSync(managedManifestPath(fixture.configDir), "utf-8")).not.toContain("\"demo\"");
+  });
+
+  test("uninstall resource filter removes only the selected managed resource", () => {
+    const fixture = makeCommandFixture("uninstall-filter");
+    seedManagedSkill(fixture, "one");
+    seedManagedSkill(fixture, "two");
+
+    captureLogs(() => runUninstall(fixture.root, "codex", { configDir: fixture.configDir, dryRun: false, resourceId: "one" }));
+
+    expect(existsSync(join(fixture.configDir, "skills/one"))).toBe(false);
+    expect(existsSync(join(fixture.configDir, "skills/two/SKILL.md"))).toBe(true);
+    const manifest = readFileSync(managedManifestPath(fixture.configDir), "utf-8");
+    expect(manifest).not.toContain("\"one\"");
+    expect(manifest).toContain("\"two\"");
+  });
 });
 
 function makeCommandFixture(name: string): { root: string; configDir: string } {
@@ -77,4 +114,33 @@ function captureLogs(fn: () => void): string {
     console.log = originalLog;
   }
   return output;
+}
+
+function seedManagedSkill(fixture: { root: string; configDir: string }, id: string): void {
+  const source = join(fixture.root, `content/skills/${id}`);
+  const destination = join(fixture.configDir, `skills/${id}`);
+  mkdirSync(source, { recursive: true });
+  mkdirSync(destination, { recursive: true });
+  writeFileSync(join(source, "SKILL.md"), `# ${id}\n`);
+  writeFileSync(join(destination, "SKILL.md"), `# ${id}\n`);
+  const manifestPath = managedManifestPath(fixture.configDir);
+  const existing = existsSync(manifestPath)
+    ? JSON.parse(readFileSync(manifestPath, "utf-8")) as { resources?: unknown[] }
+    : { version: 1, updatedAt: "2026-04-25T00:00:00.000Z", resources: [] };
+  writeManagedManifest(manifestPath, {
+    version: 1,
+    updatedAt: "2026-04-25T00:00:00.000Z",
+    resources: [
+      ...existing.resources as never[],
+      {
+        id,
+        type: "skill",
+        target: "codex",
+        source: `content/skills/${id}`,
+        destination: `skills/${id}`,
+        hash: hashPath(destination),
+        updatedAt: "2026-04-25T00:00:00.000Z",
+      },
+    ],
+  });
 }

@@ -3,6 +3,7 @@ import { runDoctor } from "./commands/doctor.js";
 import { runInstall } from "./commands/install.js";
 import { runList } from "./commands/list.js";
 import { runStatus } from "./commands/status.js";
+import { runUninstall } from "./commands/uninstall.js";
 import { runUpdate } from "./commands/update.js";
 import { repositoryRootFromCli } from "./core/paths.js";
 
@@ -10,6 +11,7 @@ interface ParsedFlags {
   dryRun: boolean;
   force: boolean;
   configDir?: string;
+  resourceId?: string;
 }
 
 const repoRoot = repositoryRootFromCli();
@@ -36,6 +38,10 @@ try {
     case "status":
       requireTarget(target);
       runStatus(repoRoot, target, parseFlags(rawFlags));
+      break;
+    case "uninstall":
+      requireTarget(target);
+      runUninstall(repoRoot, target, parseFlags(rawFlags));
       break;
     case "help":
     case "--help":
@@ -65,6 +71,12 @@ function parseFlags(flags: string[]): ParsedFlags {
       parsed.configDir = value;
       index += 1;
     }
+    else if (flag === "--resource") {
+      const value = flags[index + 1];
+      if (!value) throw new Error("--resource requires an id");
+      parsed.resourceId = value;
+      index += 1;
+    }
     else {
       throw new Error(`Unknown flag: ${flag}`);
     }
@@ -85,5 +97,6 @@ Usage:
   agent-hub status <codex|kiro|claude-code> [--config-dir <path>]
   agent-hub install <codex|kiro|claude-code> [--dry-run] [--force] [--config-dir <path>]
   agent-hub update <codex|kiro|claude-code> [--dry-run] [--force] [--config-dir <path>]
+  agent-hub uninstall <codex|kiro|claude-code> [--resource <id>] [--dry-run] [--config-dir <path>]
 `);
 }

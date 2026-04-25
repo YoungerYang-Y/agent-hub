@@ -43,6 +43,24 @@ export interface CollectManagedStatusesOptions {
   repoRoot: string;
 }
 
+export interface UninstallManagedResourcesOptions {
+  manifest: ManagedManifest;
+  manifestPath: string;
+  target: HubTarget;
+  configDir: string;
+  resourceId?: string;
+  dryRun: boolean;
+  now?: string;
+}
+
+export interface UninstallOperation {
+  id: string;
+  destination: string;
+  destinationPath: string;
+  destinationState: DestinationState;
+  status: "planned" | "removed";
+}
+
 export function managedManifestPath(configDir: string): string {
   return join(configDir, ".agent-hub-manifest.json");
 }
@@ -82,6 +100,41 @@ export function collectManagedStatuses(options: CollectManagedStatusesOptions): 
         hashState: resolveHashState(sourcePath, destinationPath, destinationState, resource.hash),
       };
     });
+}
+
+export function uninstallManagedResources(options: UninstallManagedResourcesOptions): { operations: UninstallOperation[]; manifest: ManagedManifest } {
+  const operations: UninstallOperation[] = [];
+  const remaining: ManagedResource[] = [];
+  for (const resource of options.manifest.resources) {
+    const matchesTarget = resource.target === options.target;
+    const matchesResource = !options.resourceId || resource.id === options.resourceId;
+    if (!matchesTarget || !matchesResource) {
+      remaining.push(resource);
+      continue;
+    }
+
+    const destinationPath = join(options.configDir, resource.destination);
+    const destinationState: DestinationState = existsSync(destinationPath) ? "present" : "missing";
+    operations.push({
+      id: resource.id,
+      destination: resource.destination,
+      destinationPath,
+      destinationState,
+      status: options.dryRun ? "planned" : "removed",
+    });
+
+    if (!options.dryRun && destinationState === "present") {
+      rmSync(destinationPath, { recursive: true, force: true });
+    }
+  }
+
+  const nextManifest: ManagedManifest = {
+    version: 1,
+    updatedAt: options.dryRun ? options.manifest.updatedAt : options.now ?? new Date().toISOString(),
+    resources: options.dryRun ? options.manifest.resources : remaining,
+  };
+  if (!options.dryRun && operations.length > 0) writeManagedManifest(options.manifestPath, nextManifest);
+  return { operations, manifest: nextManifest };
 }
 
 function resolveHashState(sourcePath: string, destinationPath: string, destinationState: DestinationState, expectedHash: string): HashState {
