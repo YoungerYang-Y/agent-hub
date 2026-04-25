@@ -24,25 +24,25 @@
 
 ### A. 长期约束（只读，修改需架构 RFC）
 
-- 系统全貌（领域、分层、技术栈）：`ARCHITECTURE.md`
+- 系统全貌（分层、技术栈、依赖方向）：`ARCHITECTURE.md`
+- 业务领域划分（领域边界、职责、实体）：`docs/DOMAINS.md`
 - 核心工程信条（跨所有决策的长期原则）：`docs/design-docs/core-beliefs.md`
-- 对外接口长期规范（API/UI/CLI/Mobile/SDK 命名与约定）：`docs/DESIGN.md`
-- 前端架构约束（若项目有前端）：`docs/FRONTEND.md`
 - 可靠性标准（SLO、可观测性）：`docs/RELIABILITY.md`
 - 安全策略（认证、授权、数据保护）：`docs/SECURITY.md`
 
 ### B. 流转文档（每功能一份，可增改）
 
-- 产品规格（做什么、为什么、验收标准）：`docs/product-specs/index.md`
-- 历史技术设计决策（某次如何做、如何权衡）：`docs/design-docs/index.md`
-- 进行中的计划：`docs/exec-plans/active/`
-- 已完成的计划（含决策日志）：`docs/exec-plans/completed/`
-- 技术债务清单：`docs/exec-plans/tech-debt-tracker.md`
+- 活跃需求（spec + design + plan 一体）：`docs/active/index.md`
+- 已归档版本（历史快照）：`docs/archive/index.md`
+- 技术债务清单：`docs/active/tech-debt-tracker.md`
 
 ### C. 元规范（方法论，智能体读后再动手）
 
 - 产品思维与功能流转：`docs/PRODUCT_SENSE.md`
-- 计划规范（如何拆解和执行任务）：`docs/PLANS.md`
+- 需求工作流（spec → design → plan 全流程、门禁、回退规则）：`docs/guides/WORKFLOW.md`
+- 产品规格规范（如何写 spec）：`docs/guides/SPEC.md`
+- 设计文档方法论（如何写 design.md）：`docs/guides/DESIGN.md`
+- 计划规范（如何拆解和执行任务）：`docs/guides/PLANS.md`
 - 各领域质量评分与改进优先级：`docs/QUALITY_SCORE.md`
 
 ### D. 参考与产物
@@ -57,22 +57,22 @@
   非平凡任务必须按此顺序执行；琐碎改动（注释、typo）可跳过第 2、3 步。
 -->
 
-1. **读上下文**：阅读最近相关的产品规格（`docs/product-specs/`）、设计文档（`docs/design-docs/`）与长期约束（`ARCHITECTURE.md` / `docs/DESIGN.md` / `docs/design-docs/core-beliefs.md` / `docs/SECURITY.md` / `docs/RELIABILITY.md`）。
-2. **先出计划**：非平凡任务先在 `docs/exec-plans/active/` 基于 `docs/exec-plans/_template.md` 产出一份简短计划——目标、任务清单、影响范围。
+1. **读上下文**：阅读最近相关的需求文档（`docs/active/{需求}/spec.md`、`design.md`）与长期约束（`ARCHITECTURE.md` / `docs/design-docs/core-beliefs.md` / `docs/SECURITY.md` / `docs/RELIABILITY.md`）。方法论参考 `docs/guides/WORKFLOW.md`。
+2. **先出计划**：非平凡任务先在 `docs/active/{需求}/plan.md` 基于 `docs/active/_template/plan.md` 产出一份简短计划——目标、任务清单、影响范围。
 3. **标注假设与风险**：把假设、外部依赖、失败风险写入计划的"决策日志"和"风险与阻塞"表，不要隐藏在脑子里。
 4. **小步分层实施**：每次改动保持范围可控、分层清晰；**不违反依赖方向与架构约束**；如确需违反，暂停任务，升级为独立的架构 RFC。
 5. **行为变化必加/改测试**：新行为、新分支、新错误路径都要被测试覆盖。
 6. **收尾验证**：结束前运行 lint / typecheck / 单元与集成测试 / 文档健康检查（见下方"开发命令"）；任何一项红的不得声称完成。
-7. **同步文档**：若行为、对外契约或架构发生变更，更新对应的 product-spec / design-doc / `docs/DESIGN.md` / `ARCHITECTURE.md`；文档不同步等同于实现未完成。
-8. **输出变更摘要**：交付时报告——做了什么、为什么、权衡点、遗留项与后续工作；遗留项登记到 `docs/exec-plans/tech-debt-tracker.md`。
+7. **同步文档**：若行为、对外契约或架构发生变更，更新对应的需求文档（`docs/active/{需求}/spec.md`、`design.md`）和 `ARCHITECTURE.md`；文档不同步等同于实现未完成。
+8. **输出变更摘要**：交付时报告——做了什么、为什么、权衡点、遗留项与后续工作；遗留项登记到 `docs/active/tech-debt-tracker.md`。
 
 ## 文档与流程约定（每次写文档前必读）
 
-- **文件命名**：新建执行计划用 `YYYY-MM-DD-{短名}.md`；设计文档 / 产品规格用稳定短名并在内部填"创建日期 / 最后验证"字段。**无时间戳的流转文档视为无效草稿。**
+- **需求目录**：每个需求在 `docs/active/{需求名}/` 下包含 `spec.md`、`design.md`、`plan.md`，三者共享相同 slug。时间戳和状态通过 YAML frontmatter 管理。**无 frontmatter 的文档视为无效草稿。**
 - **流程图**：优先 Mermaid，禁止截图 / ASCII 框图（仅纯目录树允许 ASCII）。
 - **生成产物**：`docs/generated/` 下文件由脚本覆盖，**禁止手改**。
-- **持续维护节奏**：每周清旧、每月查 architecture drift、持续维护 `docs/exec-plans/tech-debt-tracker.md`。详见 `docs/PLANS.md` → "持续维护节奏"。
-- **孤儿模块**：发现无 Owner 代码路径立即登记到 `docs/exec-plans/tech-debt-tracker.md`，Owner 填 `ORPHAN`。
+- **持续维护节奏**：每周清旧、每月查 architecture drift、持续维护 `docs/active/tech-debt-tracker.md`。
+- **孤儿模块**：发现无 Owner 代码路径立即登记到 `docs/active/tech-debt-tracker.md`，Owner 填 `ORPHAN`。
 
 ## 审查工作流（PR 级别）
 

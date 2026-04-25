@@ -6,7 +6,7 @@
 # 可安全重复运行——不会覆盖已有文件。
 #
 # 用法:
-#   bash path/to/skills/harness-engineering/bootstrap.sh
+#   bash path/to/skills/harness-engineering/scripts/bootstrap.sh
 #   bash bootstrap.sh /path/to/your/project
 #
 
@@ -27,12 +27,11 @@ echo ""
 
 DIRS=(
   "docs"
+  "docs/active"
+  "docs/active/_template"
+  "docs/archive"
   "docs/design-docs"
-  "docs/exec-plans"
-  "docs/exec-plans/active"
-  "docs/exec-plans/completed"
   "docs/generated"
-  "docs/product-specs"
   "docs/references"
 )
 
@@ -57,29 +56,37 @@ copy_if_missing "${TEMPLATES_DIR}/ARCHITECTURE.md" "${TARGET}/ARCHITECTURE.md"
 
 echo ""
 echo "📄 领域文档 (docs/*.md):"
-for file in DESIGN FRONTEND PLANS PRODUCT_SENSE QUALITY_SCORE RELIABILITY SECURITY; do
+for file in DOMAINS PRODUCT_SENSE QUALITY_SCORE RELIABILITY SECURITY; do
   copy_if_missing "${TEMPLATES_DIR}/docs/${file}.md" "${TARGET}/docs/${file}.md"
 done
 
 echo ""
+echo "📄 方法论 (docs/guides/):"
+mkdir -p "${TARGET}/docs/guides"
+for file in WORKFLOW SPEC DESIGN PLANS; do
+  copy_if_missing "${TEMPLATES_DIR}/docs/guides/${file}.md" "${TARGET}/docs/guides/${file}.md"
+done
+
+echo ""
+echo "📄 需求模板 (docs/active/_template/):"
+copy_if_missing "${TEMPLATES_DIR}/docs/active/_template/spec.md" "${TARGET}/docs/active/_template/spec.md"
+copy_if_missing "${TEMPLATES_DIR}/docs/active/_template/design.md" "${TARGET}/docs/active/_template/design.md"
+copy_if_missing "${TEMPLATES_DIR}/docs/active/_template/plan.md" "${TARGET}/docs/active/_template/plan.md"
+
+echo ""
+echo "📄 索引与追踪:"
+copy_if_missing "${TEMPLATES_DIR}/docs/active/index.md" "${TARGET}/docs/active/index.md"
+copy_if_missing "${TEMPLATES_DIR}/docs/active/tech-debt-tracker.md" "${TARGET}/docs/active/tech-debt-tracker.md"
+copy_if_missing "${TEMPLATES_DIR}/docs/archive/index.md" "${TARGET}/docs/archive/index.md"
+copy_if_missing "${TEMPLATES_DIR}/docs/archive/_release-template.md" "${TARGET}/docs/archive/_release-template.md"
+
+echo ""
 echo "📄 设计文档:"
-copy_if_missing "${TEMPLATES_DIR}/docs/design-docs/index.md" "${TARGET}/docs/design-docs/index.md"
 copy_if_missing "${TEMPLATES_DIR}/docs/design-docs/core-beliefs.md" "${TARGET}/docs/design-docs/core-beliefs.md"
-copy_if_missing "${TEMPLATES_DIR}/docs/design-docs/_template.md" "${TARGET}/docs/design-docs/_template.md"
-
-echo ""
-echo "📄 执行计划:"
-copy_if_missing "${TEMPLATES_DIR}/docs/exec-plans/_template.md" "${TARGET}/docs/exec-plans/_template.md"
-copy_if_missing "${TEMPLATES_DIR}/docs/exec-plans/tech-debt-tracker.md" "${TARGET}/docs/exec-plans/tech-debt-tracker.md"
-
-echo ""
-echo "📄 产品规格:"
-copy_if_missing "${TEMPLATES_DIR}/docs/product-specs/index.md" "${TARGET}/docs/product-specs/index.md"
-copy_if_missing "${TEMPLATES_DIR}/docs/product-specs/_template.md" "${TARGET}/docs/product-specs/_template.md"
 
 echo ""
 echo "📄 占位文件 (.gitkeep):"
-for dir in docs/generated docs/references docs/exec-plans/active docs/exec-plans/completed; do
+for dir in docs/generated docs/references; do
   dest="${TARGET}/${dir}/.gitkeep"
   if [ -f "$dest" ]; then
     echo "  ⏭️  已存在，跳过: $dest"
@@ -97,11 +104,11 @@ echo "后续步骤:"
 echo "  1. 在 AGENTS.md 中填写 [项目名称] 和占位符"
 echo "  2. 在 ARCHITECTURE.md 中填写领域地图和技术栈"
 echo "  3. 根据项目定制 docs/*.md 领域文档"
-echo "     （纯后端 / CLI / SDK 项目可删除 docs/FRONTEND.md，并同步删掉 AGENTS.md 中的链接）"
-echo "  4. 如需文档健康检查，在项目根目录运行（无需复制脚本到仓库）:"
-echo "       node ${SKILL_DIR}/templates/scripts/lint-docs.ts"
-echo "  5. 如需文档漂移检测（周期性运行），在项目根目录运行:"
-echo "       node ${SKILL_DIR}/templates/scripts/doc-gardening.ts"
-echo "     （两个脚本均以 cwd 为 ROOT，在项目根目录执行即可）"
-echo "     （需要 Node 22+，无需额外安装 ts-node）"
+echo "  4. 创建第一个需求："
+echo "       中任务：新建 docs/active/{需求名}/，只创建 design.md 和 plan.md"
+echo "       大任务：复制 docs/active/_template/ 为 docs/active/{需求名}/"
+echo "  5. 如需文档健康检查，在项目根目录运行："
+echo "       node ${SKILL_DIR}/scripts/lint-docs.ts"
+echo "  6. 如需文档漂移检测（周期性运行）："
+echo "       node ${SKILL_DIR}/scripts/doc-gardening.ts"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

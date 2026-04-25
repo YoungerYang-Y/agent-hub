@@ -24,26 +24,31 @@ repo-root/
 ├── AGENTS.md                          # Agent entry point (~100 lines, map only)
 ├── ARCHITECTURE.md                    # System architecture overview
 ├── docs/
-│   ├── design-docs/                   # Technical design decisions
-│   │   ├── index.md                   # Catalog of all design docs with status
-│   │   ├── core-beliefs.md            # Foundational technical principles
-│   │   ├── _template.md               # Template for new design docs
-│   │   └── {feature-name}.md          # Individual design records
-│   ├── exec-plans/                    # Execution plans as first-class artifacts
-│   │   ├── active/                    # Currently executing plans
-│   │   ├── completed/                 # Finished plans with decision logs
-│   │   ├── _template.md               # Template for new plans
-│   │   └── tech-debt-tracker.md       # Known debt, version-controlled
-│   ├── generated/                     # Auto-generated docs (DB schema, API docs)
-│   ├── product-specs/                 # Agent-facing product specifications
-│   │   ├── index.md                   # Catalog of all product specs
-│   │   ├── _template.md               # Template for new specs
-│   │   └── {feature-name}.md          # Individual product specs
-│   ├── references/                    # External LLM-optimized reference docs
-│   │   └── {library}-llms.txt         # Pattern: {library-name}-llms.txt
-│   ├── DESIGN.md                      # Interface & interaction specs (API/UI/CLI/SDK)
-│   ├── FRONTEND.md                    # Frontend architecture (optional; delete if no frontend)
-│   ├── PLANS.md                       # Planning process & conventions
+│   ├── active/                        # In-progress requirements
+│   │   ├── index.md                   # Active requirements index
+│   │   ├── tech-debt-tracker.md       # Known debt, version-controlled
+│   │   ├── _template/                 # Copy this dir per requirement
+│   │   │   ├── spec.md
+│   │   │   ├── design.md
+│   │   │   └── plan.md
+│   │   └── {requirement}/             # One dir per requirement
+│   │       ├── spec.md
+│   │       ├── design.md
+│   │       └── plan.md
+│   ├── archive/                       # Released version snapshots
+│   │   ├── index.md                   # Version archive index
+│   │   └── {version}/                 # One dir per version
+│   │       ├── release.md
+│   │       └── {requirement}/...
+│   ├── design-docs/                   # Long-term architecture decisions
+│   │   └── core-beliefs.md            # Foundational technical principles
+│   ├── generated/                     # Auto-generated docs
+│   ├── references/                    # External reference docs
+│   ├── guides/                        # Methodology (how to write docs)
+│   │   ├── WORKFLOW.md
+│   │   ├── SPEC.md
+│   │   ├── DESIGN.md
+│   │   └── PLANS.md
 │   ├── PRODUCT_SENSE.md               # Product thinking & decision framework
 │   ├── QUALITY_SCORE.md               # Quality grades per domain/layer
 │   ├── RELIABILITY.md                 # SLOs, observability, incident response
@@ -68,8 +73,6 @@ repo-root/
 |---|---|
 | `ARCHITECTURE.md` | 系统边界、领域、分层、依赖方向、技术栈 |
 | `docs/design-docs/core-beliefs.md` | 跨所有决策的长期工程信条 |
-| `docs/DESIGN.md` | 对外接口的长期规范（API/UI/CLI/Mobile/SDK） |
-| `docs/FRONTEND.md` | ARCHITECTURE 的前端子视图（无前端项目可删） |
 | `docs/RELIABILITY.md` | SLO、可观测性、性能红线 |
 | `docs/SECURITY.md` | 认证、授权、数据保护 |
 
@@ -77,11 +80,11 @@ repo-root/
 
 | Document | 角色 |
 |---|---|
-| `docs/product-specs/*.md` | 单个功能的产品规格 |
-| `docs/design-docs/*.md` | 单次技术决策的记录 |
-| `docs/exec-plans/active/*.md` | 进行中的执行计划 |
-| `docs/exec-plans/completed/*.md` | 已完成的计划归档 |
-| `docs/exec-plans/tech-debt-tracker.md` | 持续维护的债务登记 |
+| `docs/active/{需求}/spec.md` | 单个功能的产品规格 |
+| `docs/active/{需求}/design.md` | 单次技术决策的记录 |
+| `docs/active/{需求}/plan.md` | 进行中的执行计划 |
+| `docs/archive/{版本}/{需求}/` | 已归档的版本快照 |
+| `docs/active/tech-debt-tracker.md` | 持续维护的债务登记 |
 
 ### C. 元规范
 
@@ -89,7 +92,10 @@ repo-root/
 |---|---|
 | `AGENTS.md` | 智能体入口，唯一每次注入的文件（< 100 行） |
 | `docs/PRODUCT_SENSE.md` | 产品方法论与功能流转规则 |
-| `docs/PLANS.md` | 计划的拆解与执行规范 |
+| `docs/guides/WORKFLOW.md` | 需求工作流（任务分级、门禁、回退规则） |
+| `docs/guides/SPEC.md` | 产品规格方法论（如何写 spec.md） |
+| `docs/guides/DESIGN.md` | 设计文档方法论（如何写 design.md） |
+| `docs/guides/PLANS.md` | 计划方法论（如何写 plan.md、如何执行） |
 | `docs/QUALITY_SCORE.md` | 领域质量评分与改进优先级 |
 
 ### D. 参考与产物
@@ -102,14 +108,14 @@ repo-root/
 ### 子目录约定
 
 - `index.md`：流转目录的索引，智能体据此发现存在什么
-- `_template.md`：复制起点，不直接填写
+- `_template/`：需求模板目录（spec.md / design.md / plan.md），复制为新需求目录
 
 ## Standard Agent Workflow (per task)
 
 Eight steps, language- and stack-agnostic:
 
-1. **Read context** — nearest product spec, design doc, and long-term constraints (ARCHITECTURE / DESIGN / core-beliefs / SECURITY / RELIABILITY).
-2. **Plan first** — non-trivial tasks produce a short plan under `docs/exec-plans/active/` from `_template.md`.
+1. **Read context** — nearest requirement docs (`docs/active/{req}/spec.md`, `design.md`) and long-term constraints (ARCHITECTURE / core-beliefs / SECURITY / RELIABILITY). Methodology in `docs/guides/`.
+2. **Plan first** — non-trivial tasks produce a short plan in `docs/active/{需求}/plan.md` from `_template/plan.md`.
 3. **Annotate assumptions & risks** — written into the plan's decision log and risk table.
 4. **Implement in small, layered steps** — never violate dependency direction; if you must, escalate to architecture RFC.
 5. **Behavioral change → test change** — new behavior, new branch, new error path all get covered.
@@ -137,10 +143,10 @@ Eight steps, language- and stack-agnostic:
 
 | Document Type | Convention |
 |---|---|
-| `docs/exec-plans/active/*.md` | `YYYY-MM-DD-{short-name}.md` |
-| `docs/exec-plans/completed/*.md` | Same filename as when created — do NOT rename on archival |
-| `docs/design-docs/*.md` | `{short-name}.md` + required `创建日期` / `最后验证` fields inside |
-| `docs/product-specs/*.md` | `{short-name}.md` + required `创建日期` / `最后更新` fields inside |
+| `docs/active/{需求}/plan.md` | frontmatter `created` field |
+| `docs/archive/{版本}/{需求}/` | Snapshot copy — do NOT modify after archival |
+| `docs/active/{需求}/design.md` | frontmatter `created` / `verified` fields |
+| `docs/active/{需求}/spec.md` | frontmatter `created` / `updated` fields |
 
 A flow document without a timestamp is an invalid draft. Agents must refuse to implement based on it.
 

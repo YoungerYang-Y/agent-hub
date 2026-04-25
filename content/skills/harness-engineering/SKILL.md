@@ -34,9 +34,16 @@ Reference knowledge (principles, document roles, directory structure, anti-patte
 
 ## Done When
 
-- `node "$HARNESS_ENGINEERING_SKILL_DIR/templates/scripts/lint-docs.ts"` exits 0 (run from project root)
+- `node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts` exits 0 (run from project root)
 - `grep -r '<!-- ' docs/ AGENTS.md ARCHITECTURE.md` returns no unfilled placeholders (Scenario 1 only)
 - All changes committed
+
+## Boundary: skill tools vs. project content
+
+`lint-docs.ts` and `doc-gardening.ts` are this skill's internal verification tools. They must NOT appear in the generated project files (AGENTS.md, ARCHITECTURE.md, etc.). Project members may not have this skill installed.
+
+- AGENTS.md dev commands section: fill with the project's own build/test/lint commands only
+- If the project wants doc linting in CI, it should vendor or fetch the script — not reference `~/.kiro/skills/`
 
 ---
 
@@ -45,8 +52,7 @@ Reference knowledge (principles, document roles, directory structure, anti-patte
 ### Step 1: Run bootstrap script
 
 ```bash
-HARNESS_ENGINEERING_SKILL_DIR=/path/to/installed/harness-engineering
-bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project
+bash ~/.kiro/skills/harness-engineering/scripts/bootstrap.sh /path/to/project
 ```
 
 Creates full directory structure + template files. Won't overwrite existing files.
@@ -65,16 +71,16 @@ From results, determine:
 
 ### Step 3: Tailor skeleton by project type
 
-| Project Type | Keep | Remove | DESIGN.md: Keep Sections |
-|---|---|---|---|
-| Backend API | AGENTS, ARCHITECTURE, DESIGN, PLANS, SECURITY, RELIABILITY, QUALITY_SCORE, PRODUCT_SENSE | FRONTEND | API 规范 |
-| Frontend SPA | AGENTS, ARCHITECTURE, DESIGN, FRONTEND, PLANS, QUALITY_SCORE, PRODUCT_SENSE | RELIABILITY (SLO section) | Web UI 规范 |
-| CLI Tool | AGENTS, ARCHITECTURE, DESIGN, PLANS, SECURITY | FRONTEND, RELIABILITY, QUALITY_SCORE | CLI 规范 |
-| Library / SDK | AGENTS, ARCHITECTURE, DESIGN, PLANS, SECURITY | FRONTEND, RELIABILITY | SDK/API 设计 |
-| Full-Stack | All | — | All |
-| Microservices | All + per-service ARCHITECTURE | — | API 规范 + 服务间通信 |
+| Project Type | Keep | Remove |
+|---|---|---|
+| Backend API | AGENTS, ARCHITECTURE, PLANS, SECURITY, RELIABILITY, QUALITY_SCORE, PRODUCT_SENSE | — |
+| Frontend SPA | AGENTS, ARCHITECTURE, PLANS, QUALITY_SCORE, PRODUCT_SENSE | RELIABILITY (SLO section) |
+| CLI Tool | AGENTS, ARCHITECTURE, PLANS, SECURITY | RELIABILITY, QUALITY_SCORE |
+| Library / SDK | AGENTS, ARCHITECTURE, PLANS, SECURITY | RELIABILITY |
+| Full-Stack | All | — |
+| Microservices | All + per-service ARCHITECTURE | — |
 
-Delete files in "Remove" column. Delete inapplicable DESIGN.md sections. Remove dead links from AGENTS.md.
+Delete files in "Remove" column. Remove dead links from AGENTS.md. Guides (`docs/guides/`) are universal — do not delete or tailor them.
 
 ### Step 4: Fill templates (parallel)
 
@@ -83,7 +89,7 @@ All domain docs consume the same Phase 2 context — they don't depend on each o
 Docs to fill (only retained ones):
 - `ARCHITECTURE.md` — system description, domain table, layer model, tech stack, dependency rules
 - `AGENTS.md` — project overview, navigation links, dev commands
-- `docs/DESIGN.md` — retained interface sections
+- `docs/guides/DESIGN.md` — design doc methodology (how to write design.md)
 - `docs/SECURITY.md` — auth, input validation, dependency policy
 - `docs/RELIABILITY.md` — SLOs, observability (if kept)
 - `docs/QUALITY_SCORE.md` — initial per-domain scores (if kept)
@@ -99,7 +105,7 @@ Constraint: if a tool-call batch fails with "too large", split it in half. Never
 
 ### Step 5: Validate
 
-1. `node "$HARNESS_ENGINEERING_SKILL_DIR/templates/scripts/lint-docs.ts"` — must exit 0
+1. `node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts` — must exit 0
 2. `grep -r '<!-- ' docs/ AGENTS.md ARCHITECTURE.md` — every hit must be filled or section deleted
 3. Run through `checklists/quality-checklist.md` for full quality gate
 4. Commit as initial Harness commit
@@ -110,20 +116,25 @@ Constraint: if a tool-call batch fails with "too large", split it in half. Never
 
 Triggered when creating, modifying, or archiving any Harness document.
 
-| 你要做什么 | 子操作 | 完成标准 |
+| Action | Sub-operation | Done when |
 |---|---|---|
-| 新增 spec / design doc / plan | 创建新文档 | `lint-docs.ts` 通过 + `index.md` 已更新 |
-| 改 ARCHITECTURE / DESIGN / core-beliefs | 修改长期约束 | `lint-docs.ts` 通过 + 时间戳已更新 |
-| 计划所有任务已完成 | 归档计划 | 文件在 `completed/` + 债务已记录 |
-| 同一违规反复出现 ≥ 3 次 | 规则提升 | linter 能捕获该违规 + CI 已 gate |
-| 发现无主模块 | Orphan 管理 | `tech-debt-tracker.md` 已记录 |
+| New requirement | Create requirement | `lint-docs.ts` passes + `active/index.md` updated |
+| Change ARCHITECTURE / core-beliefs | Modify long-term constraint | `lint-docs.ts` passes + timestamps updated |
+| Version release | Archive version | Requirement dirs in `archive/{version}/` + debt recorded |
+| Same violation recurs ≥ 3 times | Rule promotion | Linter catches violation + CI gated |
+| Orphan module found | Orphan management | `tech-debt-tracker.md` updated |
 
-### Creating a new document
+### Creating a new requirement
 
-1. Copy from `_template.md` in the appropriate directory
-2. Fill all sections, set date fields to today
-3. Add entry to the directory's `index.md` catalog
-4. Run `lint-docs.ts` to verify links
+1. Read `docs/guides/WORKFLOW.md` and choose requirement size:
+   - Medium requirement: create `docs/active/{requirement-name}/`, copy only `design.md` and `plan.md` from `_template/`
+   - Large requirement: copy `docs/active/_template/` as `docs/active/{requirement-name}/`
+2. Fill required files for that workflow:
+   - Medium requirement: `design.md` → `plan.md`
+   - Large requirement: `spec.md` → `design.md` → `plan.md`
+3. Ensure all created files share the same slug in frontmatter `id`
+4. Add entry to `docs/active/index.md`
+5. Run `lint-docs.ts` to verify
 
 ### Modifying a long-term constraint (ARCHITECTURE / DESIGN / core-beliefs)
 
@@ -133,11 +144,40 @@ Triggered when creating, modifying, or archiving any Harness document.
 4. Update all affected links and timestamps
 5. Run `lint-docs.ts`
 
-### Archiving a completed plan
+### Archiving a version
 
-1. Verify status is 已完成/completed and all checkboxes checked
-2. Move from `exec-plans/active/` to `completed/` — do NOT rename the file
-3. Record remaining debt in `tech-debt-tracker.md`
+Triggered by human, who provides a version number.
+
+**Step 1: Prepare**
+1. Human provides version number (e.g. `v1.2.0`)
+2. Identify requirements to archive (`docs/active/` where plan status = completed)
+3. Confirm all archiving requirements have design status = verified
+
+**Step 2: Create version directory**
+1. Create `docs/archive/{version}/`
+2. Copy `docs/archive/_release-template.md` as `docs/archive/{version}/release.md`
+
+**Step 3: Fill release.md**
+1. frontmatter: version, date, retain_until (archive date + 12 months default), previous_version
+2. Version summary: one paragraph describing core changes
+3. Requirements table: extract slug, summary, change type, affected modules from each requirement's spec/design
+4. Change scope overview: aggregate interface changes, data changes, dependency changes from all requirements
+5. Release & rollback: aggregate from each requirement's design.md
+6. Key decisions: extract from each requirement's plan.md decision log
+7. Known issues: extract unresolved items from each requirement's plan.md
+
+**Step 4: Copy requirement directories**
+1. Copy archiving requirement dirs from `docs/active/` to `docs/archive/{version}/`
+2. Remove archived requirement dirs from `docs/active/`
+
+**Step 5: Update indexes**
+1. Update `docs/active/index.md`: remove archived entries
+2. Update `docs/archive/index.md`: add new version entry
+3. If previous version exists, update its release.md `next_version` field
+
+**Step 6: Finalize**
+1. Record remaining debt in `docs/active/tech-debt-tracker.md`
+2. Run `lint-docs.ts` to verify structural integrity
 
 ### Rule Promotion (when same violation recurs ≥ 3 times)
 
@@ -164,7 +204,7 @@ Run weekly or monthly. Two layers: automated script + agent review.
 ### Step 1: Run automated checks
 
 ```bash
-node "$HARNESS_ENGINEERING_SKILL_DIR/templates/scripts/doc-gardening.ts"
+node ~/.kiro/skills/harness-engineering/scripts/doc-gardening.ts
 ```
 
 Checks: catalog ↔ file sync, generated doc freshness, completed plans in active/, quality score age, stale design docs.
@@ -173,7 +213,7 @@ Checks: catalog ↔ file sync, generated doc freshness, completed plans in activ
 
 - `🔧 auto-fixable`: execute the fix (e.g. move completed plan to `completed/`)
 - `🤖 needs-agent`: requires judgment:
-  - Design docs: compare constraints against implementation → update status to 已验证 ✅ or 过期 ⚠️
+  - Design docs: compare constraints against implementation → update frontmatter `status` to `verified` or `stale`
   - Product specs: verify status matches reality
   - Quality scores: re-evaluate based on current coverage
   - Generated docs: regenerate from source, update timestamps
@@ -186,7 +226,7 @@ Open a single PR: `chore(docs): gardening — <date>`, group commits by category
 
 | Cadence | Task |
 |---|---|
-| Weekly | Scan design-docs for stale `最后验证` (> 30 days) → mark 过期 ⚠️ |
+| Weekly | Scan design-docs for stale frontmatter `verified` (> 30 days) → set `status: stale` |
 | Weekly | Dead-code scan; update QUALITY_SCORE.md |
 | Monthly | Architecture drift review → tech-debt-tracker.md or RFC |
 | Monthly | Archive completed plans |
@@ -196,32 +236,35 @@ Open a single PR: `chore(docs): gardening — <date>`, group commits by category
 
 ## Templates
 
-All templates live under the installed skill directory: `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. Bootstrap copies docs only — scripts stay in skill directory and are invoked externally.
+All templates in `~/.kiro/skills/harness-engineering/templates/`. Bootstrap copies docs only — scripts stay in skill directory and are invoked externally.
 
 | Template | Purpose |
 |---|---|
 | `AGENTS.md` | Agent entry point (~100 lines) |
 | `ARCHITECTURE.md` | System architecture |
-| `docs/DESIGN.md` | Interface specs (API/UI/CLI/SDK) |
-| `docs/FRONTEND.md` | Frontend architecture (optional) |
-| `docs/PLANS.md` | Planning conventions |
+| `docs/guides/WORKFLOW.md` | Requirement workflow (task grading, gates, rollback) |
+| `docs/guides/SPEC.md` | Spec methodology |
+| `docs/guides/DESIGN.md` | Design doc methodology |
+| `docs/guides/PLANS.md` | Planning conventions |
 | `docs/PRODUCT_SENSE.md` | Product framework |
 | `docs/QUALITY_SCORE.md` | Quality scores |
 | `docs/RELIABILITY.md` | SLOs, observability |
 | `docs/SECURITY.md` | Security policies |
-| `docs/design-docs/{index,core-beliefs,_template}.md` | Design doc catalog + template |
-| `docs/exec-plans/{_template,tech-debt-tracker}.md` | Plan template + debt tracker |
-| `docs/product-specs/{index,_template}.md` | Spec catalog + template |
-| `scripts/lint-docs.ts` | Doc structure linter (9 checks) |
-| `scripts/doc-gardening.ts` | Drift detection (6 checks) |
+| `docs/active/_template/{spec,design,plan}.md` | Requirement templates (copy dir per requirement) |
+| `docs/active/index.md` | Active requirements index |
+| `docs/active/tech-debt-tracker.md` | Tech debt registry |
+| `docs/archive/index.md` | Version archive index |
+| `docs/archive/_release-template.md` | Version release summary template |
+| `docs/design-docs/core-beliefs.md` | Foundational engineering principles |
 
-### Running scripts
+### Scripts
 
-```bash
-# From project root — both use process.cwd() as root
-node "$HARNESS_ENGINEERING_SKILL_DIR/templates/scripts/lint-docs.ts"
-node "$HARNESS_ENGINEERING_SKILL_DIR/templates/scripts/doc-gardening.ts"
-```
+| Script | Purpose | Usage |
+|---|---|---|
+| `scripts/bootstrap.sh` | Create Harness skeleton (Linux/macOS) | `bash ~/.kiro/skills/harness-engineering/scripts/bootstrap.sh /path/to/project` |
+| `scripts/bootstrap.ps1` | Create Harness skeleton (Windows) | `powershell -File ~/.kiro/skills/harness-engineering/scripts/bootstrap.ps1 -Target C:\path\to\project` |
+| `scripts/lint-docs.ts` | Validate doc structure, frontmatter, placeholders | `node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts` (from project root) |
+| `scripts/doc-gardening.ts` | Detect drift, stale docs, archive expiry | `node ~/.kiro/skills/harness-engineering/scripts/doc-gardening.ts` (from project root) |
 
 ## Versioning
 

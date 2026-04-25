@@ -33,35 +33,31 @@ harness-engineering/
     ├── AGENTS.md               # 智能体入口模板
     ├── ARCHITECTURE.md         # 系统架构模板
     ├── docs/                   # 领域文档模板
-    │   ├── DESIGN.md
-    │   ├── FRONTEND.md
-    │   ├── PLANS.md
+    │   ├── guides/              # 方法论（WORKFLOW / SPEC / DESIGN / PLANS）
     │   ├── PRODUCT_SENSE.md
     │   ├── QUALITY_SCORE.md
     │   ├── RELIABILITY.md
     │   ├── SECURITY.md
-    │   ├── design-docs/        # 设计文档目录 + 模板
-    │   ├── exec-plans/         # 执行计划目录 + 模板
-    │   ├── product-specs/      # 产品规格目录 + 模板
+    │   ├── active/             # 需求模板 + 索引
+    │   │   ├── _template/      # spec.md / design.md / plan.md
+    │   │   └── index.md
+    │   ├── archive/            # 版本归档模板 + 索引
+    │   ├── design-docs/        # 长期架构决策（core-beliefs）
     │   ├── generated/          # 自动生成文档占位
     │   └── references/         # 外部参考文档占位
-    └── scripts/
-        ├── lint-docs.ts        # 文档结构检查（9 项）
-        └── doc-gardening.ts    # 文档漂移检测（6 项）
 ```
 
 ## 快速开始
 
 ```bash
 # 1. 对目标项目运行 bootstrap
-HARNESS_ENGINEERING_SKILL_DIR=/path/to/installed/harness-engineering
-bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project
+bash ~/.kiro/skills/harness-engineering/scripts/bootstrap.sh /path/to/project
 
 # 2. 让智能体填充模板（激活 harness-engineering skill）
 
 # 3. 验证
 cd /path/to/project
-node "$HARNESS_ENGINEERING_SKILL_DIR/templates/scripts/lint-docs.ts"
+node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts
 ```
 
 ## 支持的项目类型

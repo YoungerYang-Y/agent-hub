@@ -11,9 +11,9 @@
 
   相关的长期约束文档：
   - 工程信条：`docs/design-docs/core-beliefs.md`
-  - 对外接口规范：`docs/DESIGN.md`
   - 可靠性 / 安全：`docs/RELIABILITY.md` / `docs/SECURITY.md`
-  - 前端架构（若适用）：`docs/FRONTEND.md`
+  - 前端架构（若适用）：写在本文件的相关章节中
+  方法论文档（如何写需求/设计/计划）：`docs/guides/`
 
   本模板语言无关，适用于前端/后端（Java/Python/Go/Node）/
   Android/iOS/CLI/SDK 等任意项目。示例仅作参考，请按项目替换。
@@ -26,13 +26,9 @@
 
 [项目名称] 是……
 
-## 业务领域划分
+## 业务领域
 
-<!-- 每个领域是一个独立的业务关注点。智能体据此判断代码应该放在哪里。 -->
-
-| 领域 | 职责说明 | 代码位置 | 关键实体 |
-|------|----------|----------|----------|
-| <!-- 领域名 --> | <!-- 这个领域负责什么业务 --> | `<!-- 路径 -->` | <!-- 核心数据模型 --> |
+业务领域划分随业务演进变化，独立维护在 `docs/DOMAINS.md`。
 
 ## 代码分层模型
 
@@ -55,20 +51,13 @@ flowchart LR
 <!--
   推荐使用 Mermaid 表达分层与依赖方向（diff 友好、GitHub/GitLab 原生渲染）。
   ASCII 图仅作补充注释，不作为唯一表达。
-  参见 `docs/PLANS.md` → "流程图表达约定"。
+  参见 `docs/guides/PLANS.md` → "流程图表达约定"。
 -->
 
 **智能体必须遵守的规则：**
 - 依赖只能从左到右流动（如 Service 可以导入 Repo，但 Repo 不能导入 Service）
 - 横切关注点（认证、日志、遥测、功能开关）通过统一的接口/模块进入，不逐处散落
 - 违反此规则的代码应通过自定义 linter / 架构测试拦截（按项目需要创建，可用 ArchUnit / dependency-cruiser / go-arch-lint / import-linter 等）
-
-## 跨领域通信规则
-
-- 每层只能导入其左侧的层
-- 领域之间不允许循环依赖
-- 跨领域通信只能通过 Service 层
-- 如果你需要从领域 A 调用领域 B 的功能，必须通过 B 的 Service 层接口
 
 ## 技术栈
 
@@ -95,4 +84,4 @@ flowchart LR
 
 ## 关键架构决策
 
-详见 `docs/design-docs/index.md` 完整目录。
+详见 `docs/design-docs/core-beliefs.md`。

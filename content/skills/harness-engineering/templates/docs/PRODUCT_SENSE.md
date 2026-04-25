@@ -38,9 +38,9 @@ flowchart LR
 
 | 阶段 | 文档位置 | 智能体的角色 |
 |------|----------|-------------|
-| 产品规格 | `docs/product-specs/` | 阅读规格，理解要构建什么 |
-| 设计文档 | `docs/design-docs/` | 阅读设计，理解技术方案和约束 |
-| 执行计划 | `docs/exec-plans/active/` | 按计划执行任务，更新进度 |
+| 产品规格 | `docs/active/{需求}/spec.md` | 阅读规格，理解要构建什么 |
+| 设计文档 | `docs/active/{需求}/design.md` | 阅读设计，理解技术方案和约束 |
+| 执行计划 | `docs/active/{需求}/plan.md` | 按计划执行任务，更新进度 |
 
 ## 架构层不进入每功能流转（重要）
 
@@ -49,7 +49,7 @@ flowchart LR
 | 长期约束文档 | 为什么不进流转 |
 |---|---|
 | `ARCHITECTURE.md` | 系统级边界、分层、依赖方向 |
-| `docs/DESIGN.md` | 对外接口长期规范（命名、错误码、版本策略） |
+| `docs/guides/DESIGN.md` | 设计文档方法论（如何写 design.md） |
 | `docs/design-docs/core-beliefs.md` | 跨所有决策的工程信条 |
 | `docs/SECURITY.md` / `docs/RELIABILITY.md` | 跨功能的长期约束 |
 
