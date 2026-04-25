@@ -25,6 +25,7 @@ node dist/cli.js list
 node dist/cli.js doctor codex
 node dist/cli.js status codex
 node dist/cli.js install codex --dry-run
+node dist/cli.js install all --dry-run
 node dist/cli.js install codex
 node dist/cli.js update codex
 node dist/cli.js uninstall codex --dry-run
@@ -43,6 +44,33 @@ node dist/cli.js uninstall codex --dry-run
 ```bash
 node dist/cli.js install codex --config-dir /tmp/codex-config
 ```
+
+## 选择目标与资源
+
+目标可以是单个 agent，也可以是 `all`：
+
+```bash
+# 对所有支持目标（Codex / Kiro / Claude Code）预览安装默认资源
+node dist/cli.js install all --dry-run
+
+# 查看所有目标下的受管资源状态
+node dist/cli.js status all
+```
+
+安装 / 更新默认只处理 `default: true` 的资源。可以用选择器收窄或扩大范围：
+
+```bash
+# 只安装指定资源（即使它不是 default）
+node dist/cli.js install codex --resource harness-engineering
+
+# 只安装默认 skill
+node dist/cli.js install codex --type skill
+
+# 安装目标支持的所有 skill，包括非 default
+node dist/cli.js install codex --all --type skill
+```
+
+注意：命令中的第一个 `all` 是目标选择（所有 agent），`--all` 是资源选择（包含非 default 资源）。
 
 ## 管理已安装资源
 
