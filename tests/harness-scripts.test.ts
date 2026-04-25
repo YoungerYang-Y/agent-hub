@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, test } from "vitest";
@@ -23,6 +23,7 @@ describe("harness-engineering installed scripts", () => {
 
   test("lint-docs allows docs pruned by CLI/library profiles", async () => {
     const projectRoot = copyHarnessTemplates("pruned-docs");
+    fillTemplatePlaceholders(projectRoot);
     rmSync(join(projectRoot, "docs/RELIABILITY.md"));
     rmSync(join(projectRoot, "docs/QUALITY_SCORE.md"));
     const agentsPath = join(projectRoot, "AGENTS.md");
@@ -32,7 +33,7 @@ describe("harness-engineering installed scripts", () => {
       .join("\n");
     writeFileSync(agentsPath, agents);
 
-    const result = await runNodeScript(projectRoot, "templates/scripts/lint-docs.ts");
+    const result = await runNodeScript(projectRoot, "scripts/lint-docs.ts");
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Doc health check passed");
@@ -42,28 +43,29 @@ describe("harness-engineering installed scripts", () => {
     const projectRoot = copyHarnessTemplates("fresh-gardening");
     fillQualityScoreDate(projectRoot);
 
-    const result = await runNodeScript(projectRoot, "templates/scripts/doc-gardening.ts");
+    const result = await runNodeScript(projectRoot, "scripts/doc-gardening.ts");
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("no drift detected");
   });
 
-  test("doc-gardening reports stale statuses only from catalog rows", async () => {
+  test("doc-gardening reports stale active design statuses", async () => {
     const projectRoot = copyHarnessTemplates("stale-row");
     fillQualityScoreDate(projectRoot);
-    const designDoc = join(projectRoot, "docs/design-docs/real-design.md");
-    writeFileSync(designDoc, "# Real Design\n\n创建日期：2026-04-24\n最后验证：2026-04-24\n");
-    const catalogPath = join(projectRoot, "docs/design-docs/index.md");
-    const catalog = readFileSync(catalogPath, "utf-8").replace(
-      "| <!-- 001 --> | <!-- 标题 --> | <!-- 已验证 ✅ / 草稿 📝 / 过期 ⚠️ --> | <!-- 日期 --> | `docs/design-docs/<!-- 文件名 -->.md` |",
-      "| 001 | Real Design | 过期 ⚠️ | 2026-04-24 | `docs/design-docs/real-design.md` |",
+    mkdirSync(join(projectRoot, "docs/active/real-requirement"), { recursive: true });
+    writeFileSync(
+      join(projectRoot, "docs/active/real-requirement/design.md"),
+      "---\nid: design-real-requirement\nstatus: stale\nowner: test\ncreated: 2026-04-24\nverified: 2026-04-24\n---\n# Real Design\n",
     );
-    writeFileSync(catalogPath, catalog);
+    writeFileSync(
+      join(projectRoot, "docs/active/index.md"),
+      `${readFileSync(join(projectRoot, "docs/active/index.md"), "utf-8")}\nreal-requirement\n`,
+    );
 
-    const result = await runNodeScript(projectRoot, "templates/scripts/doc-gardening.ts");
+    const result = await runNodeScript(projectRoot, "scripts/doc-gardening.ts");
 
     expect(result.status).toBe(1);
-    expect(result.stdout).toContain("Catalog contains 过期 ⚠️ entries");
+    expect(result.stdout).toContain("Design status is 'stale'");
   });
 });
 
@@ -71,8 +73,6 @@ function copyHarnessTemplates(name: string): string {
   const projectRoot = join(process.cwd(), ".tmp-tests", `harness-${name}-${Date.now()}-${Math.random()}`);
   mkdirSync(projectRoot, { recursive: true });
   cpSync(join(skillRoot, "templates"), projectRoot, { recursive: true });
-  mkdirSync(join(projectRoot, "docs/exec-plans/active"), { recursive: true });
-  mkdirSync(join(projectRoot, "docs/exec-plans/completed"), { recursive: true });
   return projectRoot;
 }
 
@@ -82,6 +82,18 @@ function fillQualityScoreDate(projectRoot: string): void {
     qualityPath,
     readFileSync(qualityPath, "utf-8").replace("最后更新：<!-- 日期 -->", "最后更新：2026-04-24"),
   );
+}
+
+function fillTemplatePlaceholders(dir: string): void {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      fillTemplatePlaceholders(path);
+      continue;
+    }
+    if (!path.endsWith(".md")) continue;
+    writeFileSync(path, readFileSync(path, "utf-8").replace(/<!--[\s\S]*?-->/g, "filled"));
+  }
 }
 
 async function runNodeScript(projectRoot: string, relativeScript: string): Promise<{ status: number; stdout: string; stderr: string }> {

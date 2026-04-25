@@ -50,14 +50,30 @@ harness-engineering/
 ## 快速开始
 
 ```bash
-# 1. 对目标项目运行 bootstrap
-bash ~/.kiro/skills/harness-engineering/scripts/bootstrap.sh /path/to/project
+# 1. 设置当前 agent 中已安装 skill 的路径
+export HARNESS_ENGINEERING_SKILL_DIR=/path/to/installed/harness-engineering
 
-# 2. 让智能体填充模板（激活 harness-engineering skill）
+# 2. 对目标项目运行 bootstrap
+bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project
 
-# 3. 验证
+# 3. 让智能体填充模板（激活 harness-engineering skill）
+
+# 4. 验证
 cd /path/to/project
-node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts
+node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"
+```
+
+常见 agent 安装路径示例：
+
+```bash
+# Codex
+export HARNESS_ENGINEERING_SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills/harness-engineering"
+
+# Kiro
+export HARNESS_ENGINEERING_SKILL_DIR="${KIRO_HOME:-$HOME/.kiro}/skills/harness-engineering"
+
+# Claude Code / cc
+export HARNESS_ENGINEERING_SKILL_DIR="${CLAUDE_HOME:-$HOME/.claude}/skills/harness-engineering"
 ```
 
 ## 支持的项目类型

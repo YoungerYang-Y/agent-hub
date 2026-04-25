@@ -34,16 +34,24 @@ Reference knowledge (principles, document roles, directory structure, anti-patte
 
 ## Done When
 
-- `node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts` exits 0 (run from project root)
+- `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"` exits 0 (run from project root)
 - `grep -r '<!-- ' docs/ AGENTS.md ARCHITECTURE.md` returns no unfilled placeholders (Scenario 1 only)
 - All changes committed
+
+## Installed Skill Directory
+
+Before running this skill's helper scripts, set `HARNESS_ENGINEERING_SKILL_DIR` to the installed directory that contains this `SKILL.md`.
+
+- Prefer an explicit value from the active agent runtime when available
+- Otherwise infer it from the current skill file location
+- Do not hard-code a tool-specific home path in generated project docs or reusable commands
 
 ## Boundary: skill tools vs. project content
 
 `lint-docs.ts` and `doc-gardening.ts` are this skill's internal verification tools. They must NOT appear in the generated project files (AGENTS.md, ARCHITECTURE.md, etc.). Project members may not have this skill installed.
 
 - AGENTS.md dev commands section: fill with the project's own build/test/lint commands only
-- If the project wants doc linting in CI, it should vendor or fetch the script — not reference `~/.kiro/skills/`
+- If the project wants doc linting in CI, it should vendor or fetch the script, not reference an agent-specific skill home
 
 ---
 
@@ -52,7 +60,7 @@ Reference knowledge (principles, document roles, directory structure, anti-patte
 ### Step 1: Run bootstrap script
 
 ```bash
-bash ~/.kiro/skills/harness-engineering/scripts/bootstrap.sh /path/to/project
+bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project
 ```
 
 Creates full directory structure + template files. Won't overwrite existing files.
@@ -105,7 +113,7 @@ Constraint: if a tool-call batch fails with "too large", split it in half. Never
 
 ### Step 5: Validate
 
-1. `node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts` — must exit 0
+1. `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"` — must exit 0
 2. `grep -r '<!-- ' docs/ AGENTS.md ARCHITECTURE.md` — every hit must be filled or section deleted
 3. Run through `checklists/quality-checklist.md` for full quality gate
 4. Commit as initial Harness commit
@@ -204,7 +212,7 @@ Run weekly or monthly. Two layers: automated script + agent review.
 ### Step 1: Run automated checks
 
 ```bash
-node ~/.kiro/skills/harness-engineering/scripts/doc-gardening.ts
+node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/doc-gardening.ts"
 ```
 
 Checks: catalog ↔ file sync, generated doc freshness, completed plans in active/, quality score age, stale design docs.
@@ -236,7 +244,7 @@ Open a single PR: `chore(docs): gardening — <date>`, group commits by category
 
 ## Templates
 
-All templates in `~/.kiro/skills/harness-engineering/templates/`. Bootstrap copies docs only — scripts stay in skill directory and are invoked externally.
+All templates live in `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. Bootstrap copies docs only — scripts stay in the installed skill directory and are invoked externally.
 
 | Template | Purpose |
 |---|---|
@@ -261,10 +269,10 @@ All templates in `~/.kiro/skills/harness-engineering/templates/`. Bootstrap copi
 
 | Script | Purpose | Usage |
 |---|---|---|
-| `scripts/bootstrap.sh` | Create Harness skeleton (Linux/macOS) | `bash ~/.kiro/skills/harness-engineering/scripts/bootstrap.sh /path/to/project` |
-| `scripts/bootstrap.ps1` | Create Harness skeleton (Windows) | `powershell -File ~/.kiro/skills/harness-engineering/scripts/bootstrap.ps1 -Target C:\path\to\project` |
-| `scripts/lint-docs.ts` | Validate doc structure, frontmatter, placeholders | `node ~/.kiro/skills/harness-engineering/scripts/lint-docs.ts` (from project root) |
-| `scripts/doc-gardening.ts` | Detect drift, stale docs, archive expiry | `node ~/.kiro/skills/harness-engineering/scripts/doc-gardening.ts` (from project root) |
+| `scripts/bootstrap.sh` | Create Harness skeleton (Linux/macOS) | `bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project` |
+| `scripts/bootstrap.ps1` | Create Harness skeleton (Windows) | `powershell -File "$env:HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.ps1" -Target C:\path\to\project` |
+| `scripts/lint-docs.ts` | Validate doc structure, frontmatter, placeholders | `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"` (from project root) |
+| `scripts/doc-gardening.ts` | Detect drift, stale docs, archive expiry | `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/doc-gardening.ts"` (from project root) |
 
 ## Versioning
 

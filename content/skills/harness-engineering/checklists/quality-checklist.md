@@ -15,7 +15,7 @@ Bootstrap 完成后，逐项检查。全部通过才算完成。
 - [ ] `grep -r '<!-- ' docs/ AGENTS.md ARCHITECTURE.md` 无未填充的占位符
 - [ ] `ARCHITECTURE.md` 包含：系统描述、领域表、分层模型、技术栈表
 - [ ] `AGENTS.md` 包含：项目概述（一段话）、导航链接、开发命令（仅项目自身的 build/test/lint 命令）
-- [ ] `AGENTS.md` 的"开发命令"中不包含 `~/.kiro/skills/` 路径
+- [ ] `AGENTS.md` 的"开发命令"中不包含 agent-specific skill home 路径（如 `~/.codex/skills/`、`~/.kiro/skills/`、`~/.claude/skills/`）
 - [ ] `docs/design-docs/core-beliefs.md` 已根据项目上下文调整（不是原始模板）
 - [ ] 所有 frontmatter 日期字段已填写（created / updated / verified）
 
