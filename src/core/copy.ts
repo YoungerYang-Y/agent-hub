@@ -45,7 +45,14 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
     );
 
     if (existsSync(destination.absolutePath) && !existingManaged && !options.force) {
-      throw new Error(`Install conflict for ${resource.id}: ${destination.absolutePath} already exists and is not managed by agent-hub`);
+      throw new Error([
+        `Install conflict for ${resource.id}: ${destination.absolutePath} already exists and is not managed by agent-hub.`,
+        `Manifest: ${manifestPath}`,
+        "Next steps:",
+        "- Use --force to replace the existing destination.",
+        "- Use --config-dir <path> to test or install into another config directory.",
+        "- Or manually back up/delete the destination, then retry.",
+      ].join("\n"));
     }
 
     operations.push({

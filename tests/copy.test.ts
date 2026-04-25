@@ -43,14 +43,26 @@ describe("copy engine", () => {
     writeFileSync(join(fixture.target, "skills/demo/SKILL.md"), "local change");
     const adapter = createCodexAdapter();
 
-    expect(() =>
+    let error: unknown;
+    try {
       syncResources([fixture.resource], adapter, {
         repoRoot: fixture.root,
         configDir: fixture.target,
         dryRun: false,
         force: false,
-      }),
-    ).toThrow(/conflict/i);
+      });
+    }
+    catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(Error);
+    const message = (error as Error).message;
+    expect(message).toContain("Install conflict");
+    expect(message).toContain(join(fixture.target, "skills/demo"));
+    expect(message).toContain(join(fixture.target, ".agent-hub-manifest.json"));
+    expect(message).toContain("--force");
+    expect(message).toContain("--config-dir");
   });
 });
 
