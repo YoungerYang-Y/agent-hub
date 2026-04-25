@@ -5,13 +5,16 @@ import { runList } from "./commands/list.js";
 import { runStatus } from "./commands/status.js";
 import { runUninstall } from "./commands/uninstall.js";
 import { runUpdate } from "./commands/update.js";
+import type { HubResourceType } from "./core/manifest.js";
 import { repositoryRootFromCli } from "./core/paths.js";
 
 interface ParsedFlags {
   dryRun: boolean;
   force: boolean;
   configDir?: string;
+  allResources: boolean;
   resourceId?: string;
+  resourceType?: HubResourceType;
 }
 
 const repoRoot = repositoryRootFromCli();
@@ -60,11 +63,12 @@ catch (error) {
 }
 
 function parseFlags(flags: string[]): ParsedFlags {
-  const parsed: ParsedFlags = { dryRun: false, force: false };
+  const parsed: ParsedFlags = { dryRun: false, force: false, allResources: false };
   for (let index = 0; index < flags.length; index += 1) {
     const flag = flags[index];
     if (flag === "--dry-run") parsed.dryRun = true;
     else if (flag === "--force") parsed.force = true;
+    else if (flag === "--all") parsed.allResources = true;
     else if (flag === "--config-dir") {
       const value = flags[index + 1];
       if (!value) throw new Error("--config-dir requires a path");
@@ -77,11 +81,22 @@ function parseFlags(flags: string[]): ParsedFlags {
       parsed.resourceId = value;
       index += 1;
     }
+    else if (flag === "--type") {
+      const value = flags[index + 1];
+      if (!value) throw new Error("--type requires a resource type");
+      parsed.resourceType = parseResourceType(value);
+      index += 1;
+    }
     else {
       throw new Error(`Unknown flag: ${flag}`);
     }
   }
   return parsed;
+}
+
+function parseResourceType(value: string): HubResourceType {
+  if (value === "skill" || value === "prompt" || value === "hook" || value === "agent") return value;
+  throw new Error(`Unsupported resource type "${value}". Supported types: skill, prompt, hook, agent`);
 }
 
 function requireTarget(value: string | undefined): asserts value is string {
@@ -95,8 +110,8 @@ Usage:
   agent-hub list
   agent-hub doctor <codex|kiro|claude-code> [--config-dir <path>]
   agent-hub status <codex|kiro|claude-code> [--config-dir <path>]
-  agent-hub install <codex|kiro|claude-code> [--dry-run] [--force] [--config-dir <path>]
-  agent-hub update <codex|kiro|claude-code> [--dry-run] [--force] [--config-dir <path>]
+  agent-hub install <codex|kiro|claude-code> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
+  agent-hub update <codex|kiro|claude-code> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
   agent-hub uninstall <codex|kiro|claude-code> [--resource <id>] [--dry-run] [--config-dir <path>]
 `);
 }

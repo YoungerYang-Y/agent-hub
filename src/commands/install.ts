@@ -1,16 +1,23 @@
 import { requireAdapter } from "../adapters/index.js";
-import { defaultResourcesForTarget, loadRegistries } from "../core/manifest.js";
+import { loadRegistries, selectResourcesForTarget, type HubResourceType } from "../core/manifest.js";
 import { syncResources } from "../core/copy.js";
 
 export interface InstallCommandOptions {
   dryRun: boolean;
   force: boolean;
   configDir?: string;
+  allResources: boolean;
+  resourceId?: string;
+  resourceType?: HubResourceType;
 }
 
 export function runInstall(repoRoot: string, target: string, options: InstallCommandOptions): void {
   const adapter = requireAdapter(target);
-  const resources = defaultResourcesForTarget(loadRegistries(repoRoot), adapter.id);
+  const resources = selectResourcesForTarget(loadRegistries(repoRoot), adapter.id, {
+    allResources: options.allResources,
+    resourceId: options.resourceId,
+    resourceType: options.resourceType,
+  });
   const result = syncResources(resources, adapter, {
     repoRoot,
     configDir: options.configDir,
@@ -19,7 +26,7 @@ export function runInstall(repoRoot: string, target: string, options: InstallCom
   });
 
   if (resources.length === 0) {
-    console.log(`No default resources registered for ${adapter.displayName}.`);
+    console.log(`No resources matched for ${adapter.displayName}.`);
     return;
   }
 

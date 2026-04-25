@@ -1,12 +1,72 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
+import { runInstall } from "../src/commands/install.js";
 import { runStatus } from "../src/commands/status.js";
 import { runUninstall } from "../src/commands/uninstall.js";
 import { hashPath } from "../src/core/hash.js";
 import { managedManifestPath, writeManagedManifest } from "../src/core/managed-manifest.js";
 
 describe("commands", () => {
+  test("install can select a non-default resource by id", () => {
+    const fixture = makeCommandFixture("install-resource");
+    seedRegistryResource(fixture, "default-skill", "skill", true);
+    seedRegistryResource(fixture, "optional-skill", "skill", false);
+
+    const output = captureLogs(() =>
+      runInstall(fixture.root, "codex", {
+        configDir: fixture.configDir,
+        dryRun: true,
+        force: false,
+        allResources: false,
+        resourceId: "optional-skill",
+      }),
+    );
+
+    expect(output).toContain("optional-skill");
+    expect(output).not.toContain("default-skill");
+  });
+
+  test("install can select default resources by type", () => {
+    const fixture = makeCommandFixture("install-type");
+    seedRegistryResource(fixture, "default-skill", "skill", true);
+    seedRegistryResource(fixture, "default-prompt", "prompt", true);
+
+    const output = captureLogs(() =>
+      runInstall(fixture.root, "codex", {
+        configDir: fixture.configDir,
+        dryRun: true,
+        force: false,
+        allResources: false,
+        resourceType: "prompt",
+      }),
+    );
+
+    expect(output).toContain("default-prompt");
+    expect(output).not.toContain("default-skill");
+  });
+
+  test("install all resources still respects type filters", () => {
+    const fixture = makeCommandFixture("install-all-type");
+    seedRegistryResource(fixture, "default-skill", "skill", true);
+    seedRegistryResource(fixture, "optional-skill", "skill", false);
+    seedRegistryResource(fixture, "optional-prompt", "prompt", false);
+
+    const output = captureLogs(() =>
+      runInstall(fixture.root, "codex", {
+        configDir: fixture.configDir,
+        dryRun: true,
+        force: false,
+        allResources: true,
+        resourceType: "skill",
+      }),
+    );
+
+    expect(output).toContain("default-skill");
+    expect(output).toContain("optional-skill");
+    expect(output).not.toContain("optional-prompt");
+  });
+
   test("status reports an empty managed resource set", () => {
     const fixture = makeCommandFixture("status-empty");
 
@@ -99,6 +159,24 @@ function makeCommandFixture(name: string): { root: string; configDir: string } {
     writeFileSync(join(root, "registry", `${registry}.json`), "[]\n");
   }
   return { root, configDir };
+}
+
+function seedRegistryResource(fixture: { root: string }, id: string, type: "skill" | "prompt", defaultInstall: boolean): void {
+  const typeDir = type === "skill" ? "skills" : "prompts";
+  const source = join(fixture.root, `content/${typeDir}/${id}`);
+  mkdirSync(source, { recursive: true });
+  writeFileSync(join(source, type === "skill" ? "SKILL.md" : `${id}.md`), `# ${id}\n`);
+  const registryPath = join(fixture.root, "registry", `${typeDir}.json`);
+  const existing = JSON.parse(readFileSync(registryPath, "utf-8")) as unknown[];
+  existing.push({
+    id,
+    type,
+    source: `content/${typeDir}/${id}`,
+    targets: ["codex"],
+    default: defaultInstall,
+    description: id,
+  });
+  writeFileSync(registryPath, `${JSON.stringify(existing, null, 2)}\n`);
 }
 
 function captureLogs(fn: () => void): string {
