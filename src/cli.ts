@@ -2,6 +2,7 @@
 import { runDoctor } from "./commands/doctor.js";
 import { runInstall } from "./commands/install.js";
 import { runList } from "./commands/list.js";
+import { runStatus } from "./commands/status.js";
 import { runUpdate } from "./commands/update.js";
 import { repositoryRootFromCli } from "./core/paths.js";
 
@@ -31,6 +32,10 @@ try {
     case "doctor":
       requireTarget(target);
       runDoctor(repoRoot, target, parseFlags(rawFlags));
+      break;
+    case "status":
+      requireTarget(target);
+      runStatus(repoRoot, target, parseFlags(rawFlags));
       break;
     case "help":
     case "--help":
@@ -77,6 +82,7 @@ function printHelp(): void {
 Usage:
   agent-hub list
   agent-hub doctor <codex|kiro|claude-code> [--config-dir <path>]
+  agent-hub status <codex|kiro|claude-code> [--config-dir <path>]
   agent-hub install <codex|kiro|claude-code> [--dry-run] [--force] [--config-dir <path>]
   agent-hub update <codex|kiro|claude-code> [--dry-run] [--force] [--config-dir <path>]
 `);
