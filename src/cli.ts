@@ -3,6 +3,7 @@ import { runDoctor } from "./commands/doctor.js";
 import { runInstall } from "./commands/install.js";
 import { runList } from "./commands/list.js";
 import { runStatus } from "./commands/status.js";
+import { runForTargetSelection } from "./commands/targets.js";
 import { runUninstall } from "./commands/uninstall.js";
 import { runUpdate } from "./commands/update.js";
 import type { HubResourceType } from "./core/manifest.js";
@@ -28,23 +29,23 @@ try {
       break;
     case "install":
       requireTarget(target);
-      runInstall(repoRoot, target, parseFlags(rawFlags));
+      runForTargets(target, (resolvedTarget) => runInstall(repoRoot, resolvedTarget, parseFlags(rawFlags)));
       break;
     case "update":
       requireTarget(target);
-      runUpdate(repoRoot, target, parseFlags(rawFlags));
+      runForTargets(target, (resolvedTarget) => runUpdate(repoRoot, resolvedTarget, parseFlags(rawFlags)));
       break;
     case "doctor":
       requireTarget(target);
-      runDoctor(repoRoot, target, parseFlags(rawFlags));
+      runForTargets(target, (resolvedTarget) => runDoctor(repoRoot, resolvedTarget, parseFlags(rawFlags)));
       break;
     case "status":
       requireTarget(target);
-      runStatus(repoRoot, target, parseFlags(rawFlags));
+      runForTargets(target, (resolvedTarget) => runStatus(repoRoot, resolvedTarget, parseFlags(rawFlags)));
       break;
     case "uninstall":
       requireTarget(target);
-      runUninstall(repoRoot, target, parseFlags(rawFlags));
+      runForTargets(target, (resolvedTarget) => runUninstall(repoRoot, resolvedTarget, parseFlags(rawFlags)));
       break;
     case "help":
     case "--help":
@@ -100,7 +101,15 @@ function parseResourceType(value: string): HubResourceType {
 }
 
 function requireTarget(value: string | undefined): asserts value is string {
-  if (!value) throw new Error("Target is required. Supported targets: codex, kiro, claude-code");
+  if (!value) throw new Error("Target is required. Supported targets: codex, kiro, claude-code, all");
+}
+
+function runForTargets(target: string, fn: (target: string) => void): void {
+  const result = runForTargetSelection(target, (adapter) => {
+    if (target === "all") console.log(`\n== ${adapter.displayName} ==`);
+    fn(adapter.id);
+  });
+  if (result.failed) process.exitCode = 1;
 }
 
 function printHelp(): void {
@@ -108,10 +117,10 @@ function printHelp(): void {
 
 Usage:
   agent-hub list
-  agent-hub doctor <codex|kiro|claude-code> [--config-dir <path>]
-  agent-hub status <codex|kiro|claude-code> [--config-dir <path>]
-  agent-hub install <codex|kiro|claude-code> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
-  agent-hub update <codex|kiro|claude-code> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
-  agent-hub uninstall <codex|kiro|claude-code> [--resource <id>] [--dry-run] [--config-dir <path>]
+  agent-hub doctor <codex|kiro|claude-code|all> [--config-dir <path>]
+  agent-hub status <codex|kiro|claude-code|all> [--config-dir <path>]
+  agent-hub install <codex|kiro|claude-code|all> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
+  agent-hub update <codex|kiro|claude-code|all> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
+  agent-hub uninstall <codex|kiro|claude-code|all> [--resource <id>] [--dry-run] [--config-dir <path>]
 `);
 }
