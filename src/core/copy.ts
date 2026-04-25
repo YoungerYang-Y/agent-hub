@@ -1,8 +1,9 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import type { AgentAdapter, ConfigResolutionOptions } from "../adapters/types.js";
 import type { HubResource } from "./manifest.js";
 import { hashPath } from "./hash.js";
+import { managedManifestPath, readManagedManifest, writeManagedManifest, type ManagedResource } from "./managed-manifest.js";
 
 export interface SyncOptions extends ConfigResolutionOptions {
   repoRoot: string;
@@ -23,29 +24,13 @@ export interface SyncResult {
   dryRun: boolean;
 }
 
-interface ManagedManifest {
-  version: 1;
-  updatedAt: string;
-  resources: ManagedResource[];
-}
-
-interface ManagedResource {
-  id: string;
-  type: string;
-  target: string;
-  source: string;
-  destination: string;
-  hash: string;
-  updatedAt: string;
-}
-
 export function planInstall(resources: HubResource[], adapter: AgentAdapter, options: SyncOptions): SyncResult {
   return syncResources(resources, adapter, { ...options, dryRun: true });
 }
 
 export function syncResources(resources: HubResource[], adapter: AgentAdapter, options: SyncOptions): SyncResult {
   const configDir = adapter.resolveConfigDir(options);
-  const manifestPath = join(configDir, ".agent-hub-manifest.json");
+  const manifestPath = managedManifestPath(configDir);
   const manifest = readManagedManifest(manifestPath);
   const operations: CopyOperation[] = [];
   const nextResources = [...manifest.resources];
@@ -94,21 +79,8 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
 
   if (!options.dryRun) {
     mkdirSync(configDir, { recursive: true });
-    writeFileSync(
-      manifestPath,
-      `${JSON.stringify({ version: 1, updatedAt: now, resources: nextResources } satisfies ManagedManifest, null, 2)}\n`,
-    );
+    writeManagedManifest(manifestPath, { version: 1, updatedAt: now, resources: nextResources });
   }
 
   return { operations, manifestPath, dryRun: options.dryRun };
-}
-
-function readManagedManifest(path: string): ManagedManifest {
-  if (!existsSync(path)) return { version: 1, updatedAt: "", resources: [] };
-  const parsed = JSON.parse(readFileSync(path, "utf-8")) as Partial<ManagedManifest>;
-  return {
-    version: 1,
-    updatedAt: parsed.updatedAt ?? "",
-    resources: Array.isArray(parsed.resources) ? parsed.resources : [],
-  };
 }
