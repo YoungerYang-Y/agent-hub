@@ -20,6 +20,12 @@ export interface ManifestIssue {
   message: string;
 }
 
+export interface ResourceSelectionOptions {
+  allResources: boolean;
+  resourceId?: string;
+  resourceType?: HubResourceType;
+}
+
 const REGISTRY_FILES: Array<{ file: string; type: HubResourceType }> = [
   { file: "skills.json", type: "skill" },
   { file: "prompts.json", type: "prompt" },
@@ -134,6 +140,16 @@ export function validateResource(value: unknown, file: string, root: string): Ma
 
 export function defaultResourcesForTarget(resources: HubResource[], target: HubTarget): HubResource[] {
   return resources.filter((resource) => resource.default && resource.targets.includes(target));
+}
+
+export function selectResourcesForTarget(resources: HubResource[], target: HubTarget, options: ResourceSelectionOptions): HubResource[] {
+  return resources.filter((resource) => {
+    if (!resource.targets.includes(target)) return false;
+    if (options.resourceId && resource.id !== options.resourceId) return false;
+    if (options.resourceType && resource.type !== options.resourceType) return false;
+    if (!options.allResources && !options.resourceId && !resource.default) return false;
+    return true;
+  });
 }
 
 export function formatManifestIssues(issues: ManifestIssue[]): string {
