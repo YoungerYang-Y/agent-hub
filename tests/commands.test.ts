@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { runInstall } from "../src/commands/install.js";
+import { runPrune } from "../src/commands/prune.js";
 import { runStatus } from "../src/commands/status.js";
 import { runUninstall } from "../src/commands/uninstall.js";
 import { hashPath } from "../src/core/hash.js";
@@ -111,6 +112,36 @@ describe("commands", () => {
     expect(output).toContain("demo");
     expect(output).toContain("present");
     expect(output).toContain("current");
+  });
+
+  test("prune dry-run reports stale managed resources without deleting them", () => {
+    const fixture = makeCommandFixture("prune-dry-run");
+    seedRegistryResource(fixture, "current", "skill", true);
+    seedManagedSkill(fixture, "current");
+    seedManagedSkill(fixture, "old");
+
+    const output = captureLogs(() => runPrune(fixture.root, "codex", { configDir: fixture.configDir, dryRun: true }));
+
+    expect(output).toContain("Planned prune");
+    expect(output).toContain("old");
+    expect(existsSync(join(fixture.configDir, "skills/old/SKILL.md"))).toBe(true);
+    expect(readFileSync(managedManifestPath(fixture.configDir), "utf-8")).toContain("\"old\"");
+  });
+
+  test("prune removes stale managed resources and keeps current ones", () => {
+    const fixture = makeCommandFixture("prune");
+    seedRegistryResource(fixture, "current", "skill", true);
+    seedManagedSkill(fixture, "current");
+    seedManagedSkill(fixture, "old");
+
+    const output = captureLogs(() => runPrune(fixture.root, "codex", { configDir: fixture.configDir, dryRun: false }));
+
+    expect(output).toContain("Pruned 1 stale managed resource");
+    expect(existsSync(join(fixture.configDir, "skills/current/SKILL.md"))).toBe(true);
+    expect(existsSync(join(fixture.configDir, "skills/old"))).toBe(false);
+    const manifest = readFileSync(managedManifestPath(fixture.configDir), "utf-8");
+    expect(manifest).toContain("\"current\"");
+    expect(manifest).not.toContain("\"old\"");
   });
 
   test("uninstall dry-run leaves managed files and manifest unchanged", () => {

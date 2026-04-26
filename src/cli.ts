@@ -2,6 +2,7 @@
 import { runDoctor } from "./commands/doctor.js";
 import { runInstall } from "./commands/install.js";
 import { runList } from "./commands/list.js";
+import { runPrune } from "./commands/prune.js";
 import { runStatus } from "./commands/status.js";
 import { resolveConfigDirForTargetSelection, runForTargetSelection } from "./commands/targets.js";
 import { runUninstall } from "./commands/uninstall.js";
@@ -38,6 +39,10 @@ try {
     case "doctor":
       requireTarget(target);
       runForTargets(target, parseFlags(rawFlags), (resolvedTarget, options) => runDoctor(repoRoot, resolvedTarget, options));
+      break;
+    case "prune":
+      requireTarget(target);
+      runForTargets(target, parseFlags(rawFlags), (resolvedTarget, options) => runPrune(repoRoot, resolvedTarget, options));
       break;
     case "status":
       requireTarget(target);
@@ -122,6 +127,7 @@ Usage:
   agent-hub list
   agent-hub doctor <codex|kiro|claude-code|all> [--config-dir <path>]
   agent-hub status <codex|kiro|claude-code|all> [--config-dir <path>]
+  agent-hub prune <codex|kiro|claude-code|all> [--dry-run] [--config-dir <path>]
   agent-hub install <codex|kiro|claude-code|all> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
   agent-hub update <codex|kiro|claude-code|all> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
   agent-hub uninstall <codex|kiro|claude-code|all> [--resource <id>] [--dry-run] [--config-dir <path>]

@@ -61,6 +61,17 @@ export interface UninstallOperation {
   status: "planned" | "removed";
 }
 
+export interface PruneManagedResourcesOptions {
+  manifest: ManagedManifest;
+  manifestPath: string;
+  registryResources: HubResource[];
+  target: HubTarget;
+  configDir: string;
+  repoRoot: string;
+  dryRun: boolean;
+  now?: string;
+}
+
 export function managedManifestPath(configDir: string): string {
   return join(configDir, ".agent-hub-manifest.json");
 }
@@ -109,6 +120,48 @@ export function uninstallManagedResources(options: UninstallManagedResourcesOpti
     const matchesTarget = resource.target === options.target;
     const matchesResource = !options.resourceId || resource.id === options.resourceId;
     if (!matchesTarget || !matchesResource) {
+      remaining.push(resource);
+      continue;
+    }
+
+    const destinationPath = join(options.configDir, resource.destination);
+    const destinationState: DestinationState = existsSync(destinationPath) ? "present" : "missing";
+    operations.push({
+      id: resource.id,
+      destination: resource.destination,
+      destinationPath,
+      destinationState,
+      status: options.dryRun ? "planned" : "removed",
+    });
+
+    if (!options.dryRun && destinationState === "present") {
+      rmSync(destinationPath, { recursive: true, force: true });
+    }
+  }
+
+  const nextManifest: ManagedManifest = {
+    version: 1,
+    updatedAt: options.dryRun ? options.manifest.updatedAt : options.now ?? new Date().toISOString(),
+    resources: options.dryRun ? options.manifest.resources : remaining,
+  };
+  if (!options.dryRun && operations.length > 0) writeManagedManifest(options.manifestPath, nextManifest);
+  return { operations, manifest: nextManifest };
+}
+
+export function pruneManagedResources(options: PruneManagedResourcesOptions): { operations: UninstallOperation[]; manifest: ManagedManifest } {
+  const statuses = collectManagedStatuses({
+    manifest: options.manifest,
+    registryResources: options.registryResources,
+    target: options.target,
+    configDir: options.configDir,
+    repoRoot: options.repoRoot,
+  });
+  const staleIds = new Set(statuses.filter((status) => status.registryState === "stale").map((status) => status.id));
+  const operations: UninstallOperation[] = [];
+  const remaining: ManagedResource[] = [];
+
+  for (const resource of options.manifest.resources) {
+    if (resource.target !== options.target || !staleIds.has(resource.id)) {
       remaining.push(resource);
       continue;
     }

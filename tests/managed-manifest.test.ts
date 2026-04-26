@@ -1,7 +1,7 @@
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { collectManagedStatuses, type ManagedManifest } from "../src/core/managed-manifest.js";
+import { collectManagedStatuses, managedManifestPath, pruneManagedResources, type ManagedManifest } from "../src/core/managed-manifest.js";
 import { hashPath } from "../src/core/hash.js";
 import type { HubResource } from "../src/core/manifest.js";
 
@@ -41,6 +41,69 @@ describe("managed manifest lifecycle", () => {
       ["drifted", "present", "drifted", "current"],
       ["old", "missing", "source-missing", "stale"],
     ]);
+  });
+
+  test("prune dry-run reports stale entries without deleting files or rewriting manifest", () => {
+    const fixture = makeManagedFixture();
+    const manifestPath = managedManifestPath(fixture.configDir);
+    const manifest: ManagedManifest = {
+      version: 1,
+      updatedAt: "2026-04-25T00:00:00.000Z",
+      resources: [
+        managed("current", "content/skills/current", "skills/current", hashPath(join(fixture.root, "content/skills/current"))),
+        managed("old", "content/skills/old", "skills/old", "old-hash"),
+      ],
+    };
+    mkdirSync(join(fixture.configDir, "skills/old"), { recursive: true });
+    writeFileSync(join(fixture.configDir, "skills/old/SKILL.md"), "# old\n");
+    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const result = pruneManagedResources({
+      manifest,
+      manifestPath,
+      registryResources: [resource("current", "content/skills/current")],
+      target: "codex",
+      configDir: fixture.configDir,
+      repoRoot: fixture.root,
+      dryRun: true,
+    });
+
+    expect(result.operations.map((operation) => operation.id)).toEqual(["old"]);
+    expect(existsSync(join(fixture.configDir, "skills/old/SKILL.md"))).toBe(true);
+    expect(readFileSync(manifestPath, "utf-8")).toContain("\"old\"");
+  });
+
+  test("prune removes stale entries and keeps current entries", () => {
+    const fixture = makeManagedFixture();
+    const manifestPath = managedManifestPath(fixture.configDir);
+    const manifest: ManagedManifest = {
+      version: 1,
+      updatedAt: "2026-04-25T00:00:00.000Z",
+      resources: [
+        managed("current", "content/skills/current", "skills/current", hashPath(join(fixture.root, "content/skills/current"))),
+        managed("old", "content/skills/old", "skills/old", "old-hash"),
+      ],
+    };
+    mkdirSync(join(fixture.configDir, "skills/old"), { recursive: true });
+    writeFileSync(join(fixture.configDir, "skills/old/SKILL.md"), "# old\n");
+    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const result = pruneManagedResources({
+      manifest,
+      manifestPath,
+      registryResources: [resource("current", "content/skills/current")],
+      target: "codex",
+      configDir: fixture.configDir,
+      repoRoot: fixture.root,
+      dryRun: false,
+      now: "2026-04-26T00:00:00.000Z",
+    });
+
+    expect(result.operations.map((operation) => operation.id)).toEqual(["old"]);
+    expect(existsSync(join(fixture.configDir, "skills/old"))).toBe(false);
+    const written = readFileSync(manifestPath, "utf-8");
+    expect(written).toContain("\"current\"");
+    expect(written).not.toContain("\"old\"");
   });
 });
 
