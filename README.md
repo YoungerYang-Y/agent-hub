@@ -29,6 +29,7 @@ node dist/cli.js install all --dry-run
 node dist/cli.js install codex
 node dist/cli.js update codex
 node dist/cli.js uninstall codex --dry-run
+node dist/cli.js prune codex --dry-run
 ```
 
 ## 配置目录
@@ -43,6 +44,14 @@ node dist/cli.js uninstall codex --dry-run
 
 ```bash
 node dist/cli.js install codex --config-dir /tmp/codex-config
+```
+
+当目标是 `all` 且传入 `--config-dir` 时，CLI 会为每个 agent 自动分配子目录，避免相互覆盖：
+
+```text
+/tmp/agent-hub-config/codex
+/tmp/agent-hub-config/kiro
+/tmp/agent-hub-config/claude-code
 ```
 
 ## 选择目标与资源
@@ -88,6 +97,18 @@ node dist/cli.js uninstall codex --resource harness-engineering
 ```
 
 `uninstall` 只删除 manifest 中记录的受管目标，不会删除未由 agent-hub 管理的本地文件。
+
+如果 registry 中删除了某个资源，manifest 中会留下 stale 记录。使用 `prune` 清理这类受管资源：
+
+```bash
+# 预览清理 stale 受管资源
+node dist/cli.js prune codex --dry-run
+
+# 清理所有目标下的 stale 受管资源
+node dist/cli.js prune all
+```
+
+`doctor` 会检查 registry、写权限和 manifest health。manifest health 会报告目标缺失、hash 漂移、source 缺失和 stale registry entries。
 
 ## 添加内容
 
