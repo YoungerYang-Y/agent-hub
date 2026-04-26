@@ -3,7 +3,7 @@ import { runDoctor } from "./commands/doctor.js";
 import { runInstall } from "./commands/install.js";
 import { runList } from "./commands/list.js";
 import { runStatus } from "./commands/status.js";
-import { runForTargetSelection } from "./commands/targets.js";
+import { resolveConfigDirForTargetSelection, runForTargetSelection } from "./commands/targets.js";
 import { runUninstall } from "./commands/uninstall.js";
 import { runUpdate } from "./commands/update.js";
 import type { HubResourceType } from "./core/manifest.js";
@@ -29,23 +29,23 @@ try {
       break;
     case "install":
       requireTarget(target);
-      runForTargets(target, (resolvedTarget) => runInstall(repoRoot, resolvedTarget, parseFlags(rawFlags)));
+      runForTargets(target, parseFlags(rawFlags), (resolvedTarget, options) => runInstall(repoRoot, resolvedTarget, options));
       break;
     case "update":
       requireTarget(target);
-      runForTargets(target, (resolvedTarget) => runUpdate(repoRoot, resolvedTarget, parseFlags(rawFlags)));
+      runForTargets(target, parseFlags(rawFlags), (resolvedTarget, options) => runUpdate(repoRoot, resolvedTarget, options));
       break;
     case "doctor":
       requireTarget(target);
-      runForTargets(target, (resolvedTarget) => runDoctor(repoRoot, resolvedTarget, parseFlags(rawFlags)));
+      runForTargets(target, parseFlags(rawFlags), (resolvedTarget, options) => runDoctor(repoRoot, resolvedTarget, options));
       break;
     case "status":
       requireTarget(target);
-      runForTargets(target, (resolvedTarget) => runStatus(repoRoot, resolvedTarget, parseFlags(rawFlags)));
+      runForTargets(target, parseFlags(rawFlags), (resolvedTarget, options) => runStatus(repoRoot, resolvedTarget, options));
       break;
     case "uninstall":
       requireTarget(target);
-      runForTargets(target, (resolvedTarget) => runUninstall(repoRoot, resolvedTarget, parseFlags(rawFlags)));
+      runForTargets(target, parseFlags(rawFlags), (resolvedTarget, options) => runUninstall(repoRoot, resolvedTarget, options));
       break;
     case "help":
     case "--help":
@@ -104,10 +104,13 @@ function requireTarget(value: string | undefined): asserts value is string {
   if (!value) throw new Error("Target is required. Supported targets: codex, kiro, claude-code, all");
 }
 
-function runForTargets(target: string, fn: (target: string) => void): void {
+function runForTargets(target: string, options: ParsedFlags, fn: (target: string, options: ParsedFlags) => void): void {
   const result = runForTargetSelection(target, (adapter) => {
     if (target === "all") console.log(`\n== ${adapter.displayName} ==`);
-    fn(adapter.id);
+    fn(adapter.id, {
+      ...options,
+      configDir: resolveConfigDirForTargetSelection(target, options.configDir, adapter),
+    });
   });
   if (result.failed) process.exitCode = 1;
 }

@@ -137,6 +137,7 @@ function checkVersionChain(): void {
 // 5. Generated docs freshness
 function checkGenerated(): void {
   for (const f of listMd("docs/generated")) {
+    if (f === "index.md" || f.startsWith("_")) continue;
     const content = read(`docs/generated/${f}`);
     const tsMatch = content.match(/(?:Last generated|最后生成)[：:]\s*(\d{4}-\d{2}-\d{2})/);
     if (!tsMatch) {

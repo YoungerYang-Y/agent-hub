@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { expandTargetSelection, runForTargetSelection } from "../src/commands/targets.js";
+import { join } from "node:path";
+import { expandTargetSelection, resolveConfigDirForTargetSelection, runForTargetSelection } from "../src/commands/targets.js";
 
 describe("target selection", () => {
   test("expands all to every supported target", () => {
@@ -21,5 +22,26 @@ describe("target selection", () => {
     expect(result.failed).toBe(true);
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0]?.target).toBe("kiro");
+  });
+
+  test("resolves target-specific config directories for all target selection", () => {
+    const base = join(process.cwd(), ".tmp-tests", "target-config-base");
+    const resolved = expandTargetSelection("all").map((adapter) => [
+      adapter.id,
+      resolveConfigDirForTargetSelection("all", base, adapter),
+    ]);
+
+    expect(resolved).toEqual([
+      ["codex", join(base, "codex")],
+      ["kiro", join(base, "kiro")],
+      ["claude-code", join(base, "claude-code")],
+    ]);
+  });
+
+  test("keeps explicit config directory unchanged for single target selection", () => {
+    const base = join(process.cwd(), ".tmp-tests", "single-config");
+    const [adapter] = expandTargetSelection("codex");
+
+    expect(resolveConfigDirForTargetSelection("codex", base, adapter!)).toBe(base);
   });
 });

@@ -1,5 +1,6 @@
 import { allAdapters, requireAdapter } from "../adapters/index.js";
 import type { AgentAdapter } from "../adapters/types.js";
+import { join } from "node:path";
 
 export interface TargetSelectionResult {
   failed: boolean;
@@ -9,6 +10,12 @@ export interface TargetSelectionResult {
 export function expandTargetSelection(target: string): AgentAdapter[] {
   if (target === "all") return allAdapters();
   return [requireAdapter(target)];
+}
+
+export function resolveConfigDirForTargetSelection(targetSelection: string, configDir: string | undefined, adapter: AgentAdapter): string | undefined {
+  if (!configDir) return undefined;
+  if (targetSelection !== "all") return configDir;
+  return join(configDir, adapter.id);
 }
 
 export function runForTargetSelection(target: string, fn: (adapter: AgentAdapter) => void): TargetSelectionResult {
