@@ -1,6 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
+import { runDoctor } from "../src/commands/doctor.js";
 import { runInstall } from "../src/commands/install.js";
 import { runPrune } from "../src/commands/prune.js";
 import { runStatus } from "../src/commands/status.js";
@@ -66,6 +67,37 @@ describe("commands", () => {
     expect(output).toContain("default-skill");
     expect(output).toContain("optional-skill");
     expect(output).not.toContain("optional-prompt");
+  });
+
+  test("doctor reports managed manifest health warnings", () => {
+    const fixture = makeCommandFixture("doctor-health");
+    seedRegistryResource(fixture, "drifted", "skill", true);
+    seedRegistryResource(fixture, "missing", "skill", true);
+    seedManagedSkill(fixture, "drifted");
+    seedManagedSkill(fixture, "missing");
+    seedManagedSkill(fixture, "old");
+    writeFileSync(join(fixture.configDir, "skills/drifted/SKILL.md"), "# local change\n");
+    rmSync(join(fixture.configDir, "skills/missing"), { recursive: true, force: true });
+
+    const output = captureLogs(() => runDoctor(fixture.root, "codex", { configDir: fixture.configDir }));
+
+    expect(output).toContain("Manifest health: warnings");
+    expect(output).toContain("drifted");
+    expect(output).toContain("destination-missing");
+    expect(output).toContain("stale");
+  });
+
+  test("doctor reports corrupt managed manifest as failed", () => {
+    const fixture = makeCommandFixture("doctor-corrupt");
+    writeFileSync(managedManifestPath(fixture.configDir), "{not-json");
+    const originalExitCode = process.exitCode;
+    process.exitCode = undefined;
+
+    const output = captureLogs(() => runDoctor(fixture.root, "codex", { configDir: fixture.configDir }));
+
+    expect(output).toContain("Manifest health: failed");
+    expect(process.exitCode).toBe(1);
+    process.exitCode = originalExitCode;
   });
 
   test("status reports an empty managed resource set", () => {
