@@ -41,8 +41,8 @@ flowchart LR
 | 阶段 | 文档位置 | 智能体的角色 |
 |------|----------|-------------|
 | 产品规格 | `docs/active/{需求}/spec.md` | 只在大任务中定义用户可见行为和边界 |
-| 设计文档 | `docs/active/{需求}/design.md` 或历史 `docs/plans/*-design.md` | 记录技术方案、影响范围、权衡 |
-| 执行计划 | `docs/active/{需求}/plan.md` 或历史 `docs/plans/*.md` | 拆分任务、定义验证命令、记录决策 |
+| 设计文档 | `docs/active/{需求}/design.md` 或归档历史 `docs/archive/v0.1.0/plans/*-design.md` | 记录技术方案、影响范围、权衡 |
+| 执行计划 | `docs/active/{需求}/plan.md` 或归档历史 `docs/archive/v0.1.0/plans/*.md` | 拆分任务、定义验证命令、记录决策 |
 | 完成验证 | 命令输出和测试 | 更新计划状态或在交接中说明验证结果 |
 
 ## 架构层不进入每功能流转

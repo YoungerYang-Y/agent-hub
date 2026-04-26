@@ -6,5 +6,4 @@
 
 | 版本 | 归档日期 | 保留至 | 前序版本 | 包含需求 (slug) | 路径 |
 |------|----------|--------|----------|----------------|------|
-
-当前没有已归档版本。
+| v0.1.0 | 2026-04-27 | 2027-04-27 | — | agent-hub-structure, cli-manifest-lifecycle, cli-resource-selection, cli-manifest-health | `docs/archive/v0.1.0/` |

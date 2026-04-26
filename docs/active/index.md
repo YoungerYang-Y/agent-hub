@@ -5,7 +5,7 @@
 | id | 需求名 | status | owner | tags | 路径 |
 |----|--------|--------|-------|------|------|
 
-当前没有按 Harness active workflow 创建的进行中需求。历史设计和计划位于 `docs/plans/`。
+当前没有按 Harness active workflow 创建的进行中需求。历史设计和计划已归档到 `docs/archive/v0.1.0/plans/`。
 
 ## 如何添加新需求
 

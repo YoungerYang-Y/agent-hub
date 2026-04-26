@@ -28,11 +28,12 @@ updated: 2026-04-26
 ## 改进优先级
 
 1. Bootstrap：为 `install/install.sh` 与 `install/install.ps1` 增加最小冒烟验证或文档化手动验证步骤。
-2. Harness Docs：后续需求从 `docs/plans/` 迁移到 `docs/active/`，完成后按版本归档。
-3. Generated Docs：完善 `docs/generated/module-dependencies.md` 的自动生成方式，避免长期手写漂移。
+2. Generated Docs：完善 `docs/generated/module-dependencies.md` 的自动生成方式，避免长期手写漂移。
+3. Release Archive：下一次版本归档时从 `docs/active/` 迁移，而不是重新使用根级 `docs/plans/`。
 
 ## 评分历史
 
 | 日期 | 领域 | 变化 | 原因 |
 |------|------|------|------|
 | 2026-04-26 | Harness Docs | C -> B | 补齐 Harness 入口、架构、领域、安全、可靠性、质量与生成文档注册表 |
+| 2026-04-27 | Harness Docs | B -> B | 将已完成的历史 `docs/plans/` 文档归档到 `docs/archive/v0.1.0/` |

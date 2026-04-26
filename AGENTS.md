@@ -24,7 +24,7 @@ Agent Hub is a personal AI agent configuration hub and copy-based installer. It 
 - `src/adapters/` maps each agent target to config directories and install destinations.
 - `src/commands/` contains CLI command orchestration; keep business logic in `src/core/`.
 - `install/` contains bootstrap scripts only; do not move TypeScript install behavior into shell or PowerShell.
-- `docs/plans/` contains historical design and implementation plans predating the Harness `docs/active/` workflow.
+- `docs/archive/v0.1.0/plans/` contains historical design and implementation plans predating the Harness `docs/active/` workflow.
 
 ## Development Rules
 

@@ -13,7 +13,7 @@ content/      # 唯一内容源
 registry/     # 内容安装元数据
 src/          # Node.js/TypeScript CLI
 install/      # Linux/Windows bootstrap 脚本
-docs/plans/   # 设计与实施计划
+docs/         # Harness 文档、设计归档与执行计划
 ```
 
 ## 常用命令
