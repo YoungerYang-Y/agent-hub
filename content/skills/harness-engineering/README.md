@@ -63,19 +63,6 @@ cd /path/to/project
 node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"
 ```
 
-常见 agent 安装路径示例：
-
-```bash
-# Codex
-export HARNESS_ENGINEERING_SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills/harness-engineering"
-
-# Kiro
-export HARNESS_ENGINEERING_SKILL_DIR="${KIRO_HOME:-$HOME/.kiro}/skills/harness-engineering"
-
-# Claude Code / cc
-export HARNESS_ENGINEERING_SKILL_DIR="${CLAUDE_HOME:-$HOME/.claude}/skills/harness-engineering"
-```
-
 ## 支持的项目类型
 
 Backend API · Frontend SPA · CLI 工具 · Library/SDK · 全栈 · 微服务

@@ -28,5 +28,4 @@ Bootstrap 完成后，逐项检查。全部通过才算完成。
 ## 可验证性
 
 - [ ] 从项目根目录运行 skill 的 `lint-docs.ts` 通过（这是 skill 维护者的验证手段，不写入项目）
-- [ ] 从项目根目录运行 skill 的 `doc-gardening.ts` 通过（同上）
 - [ ] 变更已提交为初始 Harness commit

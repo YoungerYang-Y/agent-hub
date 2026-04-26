@@ -57,13 +57,13 @@
   非平凡任务必须按此顺序执行；琐碎改动（注释、typo）可跳过第 2、3 步。
 -->
 
-1. **读上下文**：阅读最近相关的需求文档（`docs/active/{需求}/spec.md`、`design.md`）与长期约束（`ARCHITECTURE.md` / `docs/design-docs/core-beliefs.md` / `docs/SECURITY.md` / `docs/RELIABILITY.md`）。方法论参考 `docs/guides/WORKFLOW.md`。
+1. **读上下文**：阅读最近相关的需求文档（`docs/active/{需求}/spec.md`、`design.md`）与长期约束（`ARCHITECTURE.md` / `docs/DOMAINS.md` / `docs/design-docs/core-beliefs.md` / `docs/SECURITY.md` / `docs/RELIABILITY.md`）。方法论参考 `docs/guides/WORKFLOW.md`。
 2. **先出计划**：非平凡任务先在 `docs/active/{需求}/plan.md` 基于 `docs/active/_template/plan.md` 产出一份简短计划——目标、任务清单、影响范围。
 3. **标注假设与风险**：把假设、外部依赖、失败风险写入计划的"决策日志"和"风险与阻塞"表，不要隐藏在脑子里。
 4. **小步分层实施**：每次改动保持范围可控、分层清晰；**不违反依赖方向与架构约束**；如确需违反，暂停任务，升级为独立的架构 RFC。
 5. **行为变化必加/改测试**：新行为、新分支、新错误路径都要被测试覆盖。
 6. **收尾验证**：结束前运行 lint / typecheck / 单元与集成测试 / 文档健康检查（见下方"开发命令"）；任何一项红的不得声称完成。
-7. **同步文档**：若行为、对外契约或架构发生变更，更新对应的需求文档（`docs/active/{需求}/spec.md`、`design.md`）和 `ARCHITECTURE.md`；文档不同步等同于实现未完成。
+7. **同步文档**：若行为、对外契约或架构发生变更，更新对应的需求文档（`docs/active/{需求}/spec.md`、`design.md`）和 `ARCHITECTURE.md`；若领域边界变更，同步 `docs/DOMAINS.md`；文档不同步等同于实现未完成。
 8. **输出变更摘要**：交付时报告——做了什么、为什么、权衡点、遗留项与后续工作；遗留项登记到 `docs/active/tech-debt-tracker.md`。
 
 ## 文档与流程约定（每次写文档前必读）

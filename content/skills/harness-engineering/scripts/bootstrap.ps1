@@ -17,12 +17,12 @@ if (-not (Test-Path $TemplatesDir)) {
     Write-Host "❌ 模板目录未找到: $TemplatesDir" -ForegroundColor Red; exit 1
 }
 
-$Target = Resolve-Path $Target -ErrorAction SilentlyContinue
-if (-not $Target) { Write-Host "❌ 目标路径不存在" -ForegroundColor Red; exit 1 }
+if (-not (Test-Path $Target)) { New-Item -ItemType Directory -Path $Target -Force | Out-Null }
+$Target = Resolve-Path $Target
 
 Write-Host "🚀 正在初始化 Harness Engineering 文档体系: $Target`n"
 
-$Dirs = @("docs","docs\active","docs\active\_template","docs\archive","docs\design-docs","docs\generated","docs\references")
+$Dirs = @("docs","docs\active","docs\active\_template","docs\archive","docs\archive\migrated","docs\design-docs","docs\generated","docs\references")
 foreach ($dir in $Dirs) {
     $p = Join-Path $Target $dir
     if (-not (Test-Path $p)) { New-Item -ItemType Directory -Path $p -Force | Out-Null }
@@ -62,9 +62,14 @@ Copy-IfMissing "$TemplatesDir\docs\archive\_release-template.md" "$Target\docs\a
 
 Write-Host "`n📄 设计文档:"
 Copy-IfMissing "$TemplatesDir\docs\design-docs\core-beliefs.md" "$Target\docs\design-docs\core-beliefs.md"
+Copy-IfMissing "$TemplatesDir\docs\design-docs\index.md" "$Target\docs\design-docs\index.md"
+Copy-IfMissing "$TemplatesDir\docs\design-docs\_template.md" "$Target\docs\design-docs\_template.md"
+
+Write-Host "`n📄 自动生成文档注册表:"
+Copy-IfMissing "$TemplatesDir\docs\generated\index.md" "$Target\docs\generated\index.md"
 
 Write-Host "`n📄 占位文件:"
-foreach ($dir in @("docs\generated","docs\references")) {
+foreach ($dir in @("docs\references")) {
     $gk = Join-Path $Target "$dir\.gitkeep"
     if (Test-Path $gk) { Write-Host "  ⏭️  已存在，跳过: $gk" }
     else { New-Item -ItemType File -Path $gk -Force | Out-Null; Write-Host "  ✅ 已创建: $gk" }
@@ -78,4 +83,8 @@ Write-Host "  2. 根据项目定制 docs\*.md 领域文档"
 Write-Host "  3. 创建第一个需求："
 Write-Host "       中任务：新建 docs\active\{需求名}，只创建 design.md 和 plan.md"
 Write-Host "       大任务：复制 docs\active\_template\ 为 docs\active\{需求名}"
+Write-Host "  4. 如需文档健康检查，在项目根目录运行："
+Write-Host "       node `"$SkillDir\scripts\lint-docs.ts`""
+Write-Host "  5. 如需文档漂移检测（周期性运行）："
+Write-Host "       node `"$SkillDir\scripts\doc-gardening.ts`""
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

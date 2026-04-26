@@ -53,6 +53,35 @@ Before running this skill's helper scripts, set `HARNESS_ENGINEERING_SKILL_DIR` 
 - AGENTS.md dev commands section: fill with the project's own build/test/lint commands only
 - If the project wants doc linting in CI, it should vendor or fetch the script, not reference an agent-specific skill home
 
+## Default Behavior
+
+These defaults apply to all scenarios. The agent follows them without asking. The user can override any default with an explicit instruction.
+
+### Template is the style guide
+
+All documents this skill creates or touches must conform to the templates in `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. This is not a suggestion — it is the default output format.
+
+- New documents → generate from the matching template
+- Existing project documents that don't match template structure → migrate content into template format, preserving original wording where it fits
+- Template sections with no existing content → mark with `> **TODO**: 待补充 — {what information is needed}` (blockquote, not HTML comment — so the linter won't reject it but the gap is visible)
+- After migration, move the original file to `docs/archive/migrated/` with a `migrated-from-` prefix (not `docs/references/`, which is reserved for external inputs)
+
+### Act, then report
+
+The agent proceeds through scenario steps without stopping for confirmation at each stage. Instead:
+- Execute the full scenario
+- Present a summary of what was done, what was inferred, and what gaps remain (`> **TODO**` markers)
+- The user reviews the result and requests changes if needed
+
+### Ask only what you can't infer
+
+When filling templates, scan the project first and fill everything derivable from code, config, and existing docs. Only ask the user about things that genuinely cannot be inferred:
+- Ambiguous domain boundaries
+- Undocumented external dependencies (auth provider, cache, CDN)
+- Business intent that has no code representation yet
+
+Questions must be specific and evidence-based ("I see Redis in docker-compose but no cache usage in code — is it used for sessions, caching, or queuing?"). Never ask open-ended questions.
+
 ---
 
 ## Scenario 1 — Bootstrap (new project)
@@ -67,24 +96,29 @@ Creates full directory structure + template files. Won't overwrite existing file
 
 ### Step 2: Scan project context (one parallel batch, read-only)
 
-Read metadata only — NOT source file bodies. Target < 20k input tokens:
+Start with metadata, then selectively read source when needed:
 - Dependency manifests (head only, skip lock files)
 - Directory tree (`find . -maxdepth 2`, skip node_modules/.git)
 - CI config (`.github/workflows/*.yml`, `Makefile`)
 - `README*` (skip if > 500 lines)
+- Existing documentation (`*.md` in root and `docs/`, if any)
+- Source files: read selectively when metadata is insufficient to determine architecture, entry points, or domain boundaries (e.g., main entrypoint, router definitions, middleware chain). Avoid bulk reads.
 
 From results, determine:
 - Project type (see table below)
 - Which docs to keep vs. delete
+- Existing docs to migrate into template format
 
 ### Step 3: Tailor skeleton by project type
 
+Domain docs subject to tailoring: DOMAINS, SECURITY, RELIABILITY, QUALITY_SCORE, PRODUCT_SENSE. Files not in this table are always kept (AGENTS, ARCHITECTURE, guides, active/, archive/, design-docs/).
+
 | Project Type | Keep | Remove |
 |---|---|---|
-| Backend API | AGENTS, ARCHITECTURE, PLANS, SECURITY, RELIABILITY, QUALITY_SCORE, PRODUCT_SENSE | — |
-| Frontend SPA | AGENTS, ARCHITECTURE, PLANS, QUALITY_SCORE, PRODUCT_SENSE | RELIABILITY (SLO section) |
-| CLI Tool | AGENTS, ARCHITECTURE, PLANS, SECURITY | RELIABILITY, QUALITY_SCORE |
-| Library / SDK | AGENTS, ARCHITECTURE, PLANS, SECURITY | RELIABILITY |
+| Backend API | DOMAINS, SECURITY, RELIABILITY, QUALITY_SCORE, PRODUCT_SENSE | — |
+| Frontend SPA | DOMAINS, QUALITY_SCORE, PRODUCT_SENSE | SECURITY, RELIABILITY |
+| CLI Tool | SECURITY | DOMAINS, RELIABILITY, QUALITY_SCORE, PRODUCT_SENSE |
+| Library / SDK | SECURITY | DOMAINS, RELIABILITY, QUALITY_SCORE, PRODUCT_SENSE |
 | Full-Stack | All | — |
 | Microservices | All + per-service ARCHITECTURE | — |
 
@@ -95,21 +129,32 @@ Delete files in "Remove" column. Remove dead links from AGENTS.md. Guides (`docs
 All domain docs consume the same Phase 2 context — they don't depend on each other. Fill in parallel.
 
 Docs to fill (only retained ones):
-- `ARCHITECTURE.md` — system description, domain table, layer model, tech stack, dependency rules
+- `ARCHITECTURE.md` — system description, layer model, tech stack, dependency rules
 - `AGENTS.md` — project overview, navigation links, dev commands
-- `docs/guides/DESIGN.md` — design doc methodology (how to write design.md)
-- `docs/SECURITY.md` — auth, input validation, dependency policy
+- `docs/DOMAINS.md` — business domain boundaries, responsibilities, entities (if kept)
+- `docs/SECURITY.md` — auth, input validation, dependency policy (if kept)
 - `docs/RELIABILITY.md` — SLOs, observability (if kept)
 - `docs/QUALITY_SCORE.md` — initial per-domain scores (if kept)
-- `docs/PRODUCT_SENSE.md` — target users, principles
+- `docs/PRODUCT_SENSE.md` — target users, principles (if kept)
 - `docs/design-docs/core-beliefs.md` — adapt 10 principles to project
+- `docs/guides/WORKFLOW.md` — adapt task grading thresholds to project scale
+- `docs/guides/SPEC.md` — adapt spec methodology examples to project domain
+- `docs/guides/DESIGN.md` — adapt design doc examples to project tech stack
+- `docs/guides/PLANS.md` — adapt planning conventions to project tooling
 - Leave `index.md` catalogs empty (no entries yet)
 
 **Execution mode** — pick before starting:
 - **≤ 6 docs to fill → Mode A**: single agent, 2-3 batched tool-call turns. ~50k tokens, 10-15 min.
-- **≥ 7 docs to fill → Mode C**: build a compact Project Brief (~2k tokens) from Step 2 output, fan out one subagent per doc. Each subagent gets brief + template only (NOT this skill). ~100k tokens, 2-4 min.
+- **≥ 7 docs to fill → Mode B**: build a compact Project Brief (~2k tokens) from Step 2 output, fan out one subagent per doc. Each subagent gets brief + template only (NOT this skill). ~100k tokens, 2-4 min.
 
 Constraint: if a tool-call batch fails with "too large", split it in half. Never fall back to one-file-at-a-time.
+
+### Step 4b: Generate docs from source
+
+Read `docs/generated/index.md` registry. For each entry whose data source exists in the project:
+1. Scan the declared source (ORM models, router files, etc.)
+2. Generate the document with a `最后生成: YYYY-MM-DD` timestamp as the first line
+3. Skip entries whose data source doesn't exist in the project
 
 ### Step 5: Validate
 
@@ -219,12 +264,12 @@ Checks: catalog ↔ file sync, generated doc freshness, completed plans in activ
 
 ### Step 2: Process findings
 
-- `🔧 auto-fixable`: execute the fix (e.g. move completed plan to `completed/`)
+- `🔧 auto-fixable`: execute the fix (e.g. flag completed requirement for version archiving)
 - `🤖 needs-agent`: requires judgment:
   - Design docs: compare constraints against implementation → update frontmatter `status` to `verified` or `stale`
   - Product specs: verify status matches reality
   - Quality scores: re-evaluate based on current coverage
-  - Generated docs: regenerate from source, update timestamps
+  - Generated docs: read `docs/generated/index.md` registry, regenerate stale entries from source, update timestamps
 
 ### Step 3: Commit
 
@@ -250,6 +295,7 @@ All templates live in `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. Bootstrap cop
 |---|---|
 | `AGENTS.md` | Agent entry point (~100 lines) |
 | `ARCHITECTURE.md` | System architecture |
+| `docs/DOMAINS.md` | Business domain boundaries and responsibilities |
 | `docs/guides/WORKFLOW.md` | Requirement workflow (task grading, gates, rollback) |
 | `docs/guides/SPEC.md` | Spec methodology |
 | `docs/guides/DESIGN.md` | Design doc methodology |
@@ -264,6 +310,9 @@ All templates live in `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. Bootstrap cop
 | `docs/archive/index.md` | Version archive index |
 | `docs/archive/_release-template.md` | Version release summary template |
 | `docs/design-docs/core-beliefs.md` | Foundational engineering principles |
+| `docs/design-docs/index.md` | Project-level design decisions catalog |
+| `docs/design-docs/_template.md` | Design decision template (copy per topic) |
+| `docs/generated/index.md` | Generated docs registry (what to generate, from where) |
 
 ### Scripts
 
@@ -276,12 +325,14 @@ All templates live in `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. Bootstrap cop
 
 ## Versioning
 
-CalVer `YYYY.MM.PATCH`. Current: **2026.04.3**
+CalVer `YYYY.MM.PATCH`. Current: **2026.04.5**
 
 - Template changes (wording, section order) are backward-compatible
 - Adding new files/sections is backward-compatible
 - Renaming/removing existing files is breaking and requires migration notes
 
+**2026.04.5** — Comprehensive consistency pass: fixed DOMAINS.md systematic omission (added to Templates table, project type table, Step 4 fill list, REFERENCE.md, lint-docs.ts); fixed design-docs/index.md and _template.md missing from bootstrap scripts; rewrote project type table with explicit Keep/Remove for all domain docs; removed PLANS phantom entry; added all 4 guides to Step 4 fill list; fixed completed/ ghost reference; added archive/migrated/ to REFERENCE.md; fixed bootstrap.ps1 parity; clarified DOMAINS.md RFC policy; removed Agent Observability and doc-health.yml ghost references; removed doc-gardening.ts from bootstrap quality checklist; renamed Mode C→B.
+**2026.04.4** — Added Default Behavior section: template as style guide, act-then-report, ask only what can't be inferred. Info gaps use `> **TODO**` blockquotes (not HTML comments) to avoid linter conflict. Migrated originals go to `docs/archive/migrated/` (not `docs/references/`). Bootstrap Step 2 allows selective source reads when metadata is insufficient.
 **2026.04.3** — Reorganized to standard skill directory structure: added README.md, references/, checklists/, scripts/; moved REFERENCE.md and bootstrap scripts.
 **2026.04.2** — Restructured: execution methods in SKILL.md, reference knowledge in REFERENCE.md. Added Input/Output/Done, When NOT to Activate, 3-scenario structure.
 **2026.04.1** — Added Project Type Profiles, Post-Bootstrap Workflow, doc-gardening.ts, expanded Rule Promotion.

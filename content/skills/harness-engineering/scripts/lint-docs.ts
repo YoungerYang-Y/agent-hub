@@ -110,7 +110,7 @@ function checkRequiredFiles(issues: Issue[]): void {
   ];
   for (const f of required) { if (!exists(f)) issues.push({ file: f, level: "error", message: "Missing required file." }); }
   // Optional files: only warn if AGENTS.md links to them but they don't exist
-  const optional = ["docs/QUALITY_SCORE.md", "docs/RELIABILITY.md", "docs/SECURITY.md"];
+  const optional = ["docs/DOMAINS.md", "docs/QUALITY_SCORE.md", "docs/RELIABILITY.md", "docs/SECURITY.md"];
   if (exists("AGENTS.md")) {
     const agents = read("AGENTS.md");
     for (const f of optional) {
@@ -228,7 +228,7 @@ function checkPlaceholders(issues: Issue[]): void {
     }
   }
   // Check domain docs
-  for (const file of ["PRODUCT_SENSE.md", "QUALITY_SCORE.md", "RELIABILITY.md", "SECURITY.md"]) {
+  for (const file of ["DOMAINS.md", "PRODUCT_SENSE.md", "QUALITY_SCORE.md", "RELIABILITY.md", "SECURITY.md"]) {
     const path = `docs/${file}`;
     if (!exists(path)) continue;
     if (placeholderRe.test(read(path))) {
@@ -262,6 +262,53 @@ function checkPlaceholders(issues: Issue[]): void {
   }
 }
 
+function checkArchiveReleases(issues: Issue[]): void {
+  for (const dir of listDirs("docs/archive")) {
+    const path = `docs/archive/${dir}/release.md`;
+    if (!exists(path)) continue;
+    const content = read(path);
+    const fm = parseFrontmatter(content);
+    if (!fm) { issues.push({ file: path, level: "error", message: "Missing YAML frontmatter." }); continue; }
+    for (const k of ["version", "date"]) {
+      if (!fm[k] || fm[k] === "" || fm[k].includes("{") || fm[k] === "YYYY-MM-DD")
+        issues.push({ file: path, level: "error", message: `Frontmatter '${k}' is missing or placeholder.` });
+    }
+    if (fm.retain_until && (fm.retain_until === "YYYY-MM-DD" || fm.retain_until.includes("{")))
+      issues.push({ file: path, level: "error", message: "Frontmatter 'retain_until' is placeholder." });
+    // Key sections must have at least one real data row (not just table header + separator)
+    const tableHasData = (section: string): boolean => {
+      const idx = content.indexOf(section);
+      if (idx === -1) return false;
+      const after = content.slice(idx + section.length, content.indexOf("\n## ", idx + 1) >>> 0 || content.length);
+      const rows = after.split("\n").filter(l => l.startsWith("|") && !l.includes("---") && !l.includes("slug") && !l.includes("commit") && !l.includes("接口") && !l.includes("变更") && !l.includes("依赖") && !l.includes("问题"));
+      return rows.some(r => !r.includes("<!--"));
+    };
+    if (!tableHasData("## 包含需求"))
+      issues.push({ file: path, level: "error", message: "Section '包含需求' has no requirement entries. Fill the requirements table." });
+    // Changelog must have at least one non-placeholder list item under Features/Fixes/Misc
+    const changelogIdx = content.indexOf("## Changelog");
+    if (changelogIdx !== -1) {
+      const changelogEnd = content.indexOf("\n## ", changelogIdx + 1);
+      const changelogSection = content.slice(changelogIdx, changelogEnd === -1 ? content.length : changelogEnd);
+      const items = changelogSection.split("\n").filter(l => l.startsWith("- ") && !l.includes("<!--"));
+      if (items.length === 0)
+        issues.push({ file: path, level: "error", message: "Changelog has no entries. Add at least one feature, fix, or misc item." });
+    }
+    // Verification checklist: ALL items must be checked
+    const verifyIdx = content.indexOf("## 验证状态");
+    if (verifyIdx !== -1) {
+      const verifyEnd = content.indexOf("\n## ", verifyIdx + 1);
+      const verifySection = content.slice(verifyIdx, verifyEnd === -1 ? content.length : verifyEnd);
+      const unchecked = verifySection.match(/- \[ \]/g);
+      const checked = verifySection.match(/- \[x\]/g);
+      if (!checked || checked.length === 0)
+        issues.push({ file: path, level: "error", message: "Section '验证状态' has no checked items. Complete verification before archiving." });
+      else if (unchecked && unchecked.length > 0)
+        issues.push({ file: path, level: "warning", message: `Section '验证状态' has ${unchecked.length} unchecked item(s). Review before finalizing.` });
+    }
+  }
+}
+
 function lintDocs(): Issue[] {
   const issues: Issue[] = [];
   checkAgentsMd(issues);
@@ -270,6 +317,7 @@ function lintDocs(): Issue[] {
   checkKeySections(issues);
   checkGeneratedDocs(issues);
   checkArchiveExpiry(issues);
+  checkArchiveReleases(issues);
   checkPlaceholders(issues);
   return issues;
 }

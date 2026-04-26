@@ -24,6 +24,7 @@ repo-root/
 ├── AGENTS.md                          # Agent entry point (~100 lines, map only)
 ├── ARCHITECTURE.md                    # System architecture overview
 ├── docs/
+│   ├── DOMAINS.md                     # Business domain boundaries
 │   ├── active/                        # In-progress requirements
 │   │   ├── index.md                   # Active requirements index
 │   │   ├── tech-debt-tracker.md       # Known debt, version-controlled
@@ -37,13 +38,18 @@ repo-root/
 │   │       └── plan.md
 │   ├── archive/                       # Released version snapshots
 │   │   ├── index.md                   # Version archive index
+│   │   ├── _release-template.md       # Version release summary template
+│   │   ├── migrated/                  # Pre-migration originals (auto-created)
 │   │   └── {version}/                 # One dir per version
 │   │       ├── release.md
 │   │       └── {requirement}/...
-│   ├── design-docs/                   # Long-term architecture decisions
+│   ├── design-docs/                   # Project-level design decisions
+│   │   ├── index.md                   # Design decisions catalog
+│   │   ├── _template.md               # Design decision template
 │   │   └── core-beliefs.md            # Foundational technical principles
-│   ├── generated/                     # Auto-generated docs
-│   ├── references/                    # External reference docs
+│   ├── generated/                     # Auto-generated docs (machine-written, do not hand-edit)
+│   │   └── index.md                   # Registry: what to generate, from where
+│   ├── references/                    # External reference docs (read-only)
 │   ├── guides/                        # Methodology (how to write docs)
 │   │   ├── WORKFLOW.md
 │   │   ├── SPEC.md
@@ -53,16 +59,13 @@ repo-root/
 │   ├── QUALITY_SCORE.md               # Quality grades per domain/layer
 │   ├── RELIABILITY.md                 # SLOs, observability, incident response
 │   └── SECURITY.md                    # Security policies & requirements
-└── .github/
-    └── workflows/
-        └── doc-health.yml             # CI job (optional)
 ```
 
 ## Document Roles
 
 文档按四个分层组织，核心规则：**需求、设计、计划、长期约束不要混写**。
 
-> - **长期约束**（Architecture）= 不因一个功能而改，修改需独立架构 RFC
+> - **长期约束**（Architecture）= 不因一个功能而改；`ARCHITECTURE.md` 和 `core-beliefs.md` 修改需独立架构 RFC，`DOMAINS.md` 随业务演进直接更新
 > - **产品规格**（Product Spec）= 为什么做、做什么、用户与业务规则
 > - **设计文档**（Design Doc）= 某次决策的怎么做与权衡
 > - **执行计划**（Exec Plan）= 这次怎么拆、先后、风险、验收
@@ -71,7 +74,8 @@ repo-root/
 
 | Document | 角色 |
 |---|---|
-| `ARCHITECTURE.md` | 系统边界、领域、分层、依赖方向、技术栈 |
+| `ARCHITECTURE.md` | 系统边界、分层、依赖方向、技术栈（修改需架构 RFC） |
+| `docs/DOMAINS.md` | 业务领域划分、职责边界、核心实体（随业务演进更新，不需要架构 RFC） |
 | `docs/design-docs/core-beliefs.md` | 跨所有决策的长期工程信条 |
 | `docs/RELIABILITY.md` | SLO、可观测性、性能红线 |
 | `docs/SECURITY.md` | 认证、授权、数据保护 |
@@ -114,7 +118,7 @@ repo-root/
 
 Eight steps, language- and stack-agnostic:
 
-1. **Read context** — nearest requirement docs (`docs/active/{req}/spec.md`, `design.md`) and long-term constraints (ARCHITECTURE / core-beliefs / SECURITY / RELIABILITY). Methodology in `docs/guides/`.
+1. **Read context** — nearest requirement docs (`docs/active/{req}/spec.md`, `design.md`) and long-term constraints (ARCHITECTURE / DOMAINS / core-beliefs / SECURITY / RELIABILITY). Methodology in `docs/guides/`.
 2. **Plan first** — non-trivial tasks produce a short plan in `docs/active/{需求}/plan.md` from `_template/plan.md`.
 3. **Annotate assumptions & risks** — written into the plan's decision log and risk table.
 4. **Implement in small, layered steps** — never violate dependency direction; if you must, escalate to architecture RFC.
@@ -130,14 +134,6 @@ Eight steps, language- and stack-agnostic:
 3. Agent responds to all feedback and iterates
 4. Human reviews only when judgment is required
 5. Merge when all agent reviewers pass
-
-## Agent Observability
-
-- App can start per git worktree for isolated verification
-- CDP (Chrome DevTools Protocol) for DOM snapshots and screenshots
-- Structured logs queryable via LogQL (or equivalent)
-- Metrics queryable via PromQL (or equivalent)
-- Local observability stack is ephemeral per worktree
 
 ## File Naming & Timestamps
 

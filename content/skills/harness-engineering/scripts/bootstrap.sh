@@ -22,7 +22,7 @@ if [ ! -d "$TEMPLATES_DIR" ]; then
   exit 1
 fi
 
-echo "🚀 正在初始化 Harness Engineering 文档体系: $(cd "$TARGET" && pwd)"
+echo "🚀 正在初始化 Harness Engineering 文档体系: $(mkdir -p "$TARGET" && cd "$TARGET" && pwd)"
 echo ""
 
 DIRS=(
@@ -30,6 +30,7 @@ DIRS=(
   "docs/active"
   "docs/active/_template"
   "docs/archive"
+  "docs/archive/migrated"
   "docs/design-docs"
   "docs/generated"
   "docs/references"
@@ -83,10 +84,16 @@ copy_if_missing "${TEMPLATES_DIR}/docs/archive/_release-template.md" "${TARGET}/
 echo ""
 echo "📄 设计文档:"
 copy_if_missing "${TEMPLATES_DIR}/docs/design-docs/core-beliefs.md" "${TARGET}/docs/design-docs/core-beliefs.md"
+copy_if_missing "${TEMPLATES_DIR}/docs/design-docs/index.md" "${TARGET}/docs/design-docs/index.md"
+copy_if_missing "${TEMPLATES_DIR}/docs/design-docs/_template.md" "${TARGET}/docs/design-docs/_template.md"
+
+echo ""
+echo "📄 自动生成文档注册表:"
+copy_if_missing "${TEMPLATES_DIR}/docs/generated/index.md" "${TARGET}/docs/generated/index.md"
 
 echo ""
 echo "📄 占位文件 (.gitkeep):"
-for dir in docs/generated docs/references; do
+for dir in docs/references; do
   dest="${TARGET}/${dir}/.gitkeep"
   if [ -f "$dest" ]; then
     echo "  ⏭️  已存在，跳过: $dest"
