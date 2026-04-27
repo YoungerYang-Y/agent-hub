@@ -2,9 +2,19 @@
 
 个人 AI Agent 配置源仓库与复制式安装器。
 
+## 定位
+
+Agent Hub 是三个东西的组合：
+
+1. **个人 agent-hub CLI**：用 `agent-hub` 命令把本仓库中的 agent 配置复制安装到本机工具目录。
+2. **Skill registry**：用 `content/` 保存真实资源，用 `registry/` 声明资源元数据、默认安装状态和目标支持关系。
+3. **`npx agent-hub add` 兼容入口**：面向脚本化安装入口提供 `add` 命令别名；底层仍复用 agent-hub 的 registry、dry-run、manifest 和 copy 安装规则。
+
+它不是公共技能市场，也不依赖常驻服务。当前目标是安全地维护个人 AI agent 配置，并让 Codex、Kiro、Claude Code 等本地 agent 共享同一套资源来源。
+
 ## 目标
 
-集中维护 skills、prompts、hooks、agents 等 AI 配置内容，并通过统一 Node.js CLI 同步到 Codex、Kiro、Claude Code 等本地配置目录。
+集中维护 skills、prompts、hooks、agents 等 AI 配置内容，并通过统一 Node.js CLI 同步到本地配置目录。
 
 ## 结构
 
@@ -21,6 +31,8 @@ docs/         # Harness 文档、设计归档与执行计划
 ```bash
 npm install
 npm run build
+npm run format
+npm run check
 node dist/cli.js list
 node dist/cli.js doctor codex
 node dist/cli.js status codex
@@ -30,6 +42,27 @@ node dist/cli.js install codex
 node dist/cli.js update codex
 node dist/cli.js uninstall codex --dry-run
 node dist/cli.js prune codex --dry-run
+```
+
+## Bootstrap 安装脚本
+
+`install/install.sh` 和 `install/install.ps1` 会严格要求 Node.js 22+。默认执行 dry-run，只展示将安装的资源：
+
+```bash
+./install/install.sh codex
+```
+
+确认计划后，用 `--apply` 才会实际写入目标配置目录：
+
+```bash
+./install/install.sh codex --apply
+```
+
+PowerShell 用法相同：
+
+```powershell
+.\install\install.ps1 codex
+.\install\install.ps1 codex --apply
 ```
 
 ## 配置目录

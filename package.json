@@ -1,15 +1,41 @@
 {
   "name": "agent-hub",
   "version": "0.1.0",
-  "description": "Personal AI agent configuration hub and copy-based installer.",
+  "description": "Personal AI agent-hub CLI, skill registry, and add-command compatibility layer.",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/YoungerYang-Y/agent-hub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YoungerYang-Y/agent-hub/issues"
+  },
+  "homepage": "https://github.com/YoungerYang-Y/agent-hub#readme",
   "bin": {
     "agent-hub": "./dist/cli.js"
   },
+  "files": [
+    "dist/",
+    "src/",
+    "scripts/",
+    "content/",
+    "registry/",
+    "install/",
+    "docs/",
+    "ARCHITECTURE.md",
+    "AGENTS.md",
+    "README.md",
+    "LICENSE",
+    "tsconfig.json",
+    "vitest.config.ts"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run tests",
-    "check": "npm run build && npm test"
+    "format": "node scripts/format.mjs --write",
+    "format:check": "node scripts/format.mjs --check",
+    "test": "node scripts/run-tests.mjs",
+    "check": "npm run format:check && npm run build && npm test"
   },
   "engines": {
     "node": ">=22"

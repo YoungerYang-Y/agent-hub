@@ -7,6 +7,7 @@ import { runStatus } from "./commands/status.js";
 import { resolveConfigDirForTargetSelection, runForTargetSelection } from "./commands/targets.js";
 import { runUninstall } from "./commands/uninstall.js";
 import { runUpdate } from "./commands/update.js";
+import { normalizeCliCommand } from "./core/command-aliases.js";
 import type { HubResourceType } from "./core/manifest.js";
 import { repositoryRootFromCli } from "./core/paths.js";
 
@@ -20,7 +21,8 @@ interface ParsedFlags {
 }
 
 const repoRoot = repositoryRootFromCli();
-const [, , command, target, ...rawFlags] = process.argv;
+const [, , rawCommand, rawTarget, ...rawFlagsFromArgv] = process.argv;
+const { command, target, flags: rawFlags } = normalizeCliCommand(rawCommand, rawTarget, rawFlagsFromArgv);
 
 try {
   switch (command) {
@@ -125,11 +127,15 @@ function printHelp(): void {
 
 Usage:
   agent-hub list
+  agent-hub add <codex|kiro|claude-code|all> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
   agent-hub doctor <codex|kiro|claude-code|all> [--config-dir <path>]
   agent-hub status <codex|kiro|claude-code|all> [--config-dir <path>]
   agent-hub prune <codex|kiro|claude-code|all> [--dry-run] [--config-dir <path>]
   agent-hub install <codex|kiro|claude-code|all> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
   agent-hub update <codex|kiro|claude-code|all> [--resource <id>] [--type <type>] [--all] [--dry-run] [--force] [--config-dir <path>]
   agent-hub uninstall <codex|kiro|claude-code|all> [--resource <id>] [--dry-run] [--config-dir <path>]
+
+Compatibility:
+  agent-hub add <target> maps to agent-hub install <target>
 `);
 }
