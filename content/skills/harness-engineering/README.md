@@ -27,8 +27,10 @@ harness-engineering/
 ├── checklists/
 │   └── quality-checklist.md    # Bootstrap 完成后的质量检查清单
 ├── scripts/
-│   ├── bootstrap.sh            # macOS/Linux 初始化脚本
-│   └── bootstrap.ps1           # Windows 初始化脚本
+│   ├── bootstrap.ts            # 初始化脚本（跨平台）
+│   ├── create-requirement.ts   # 创建需求目录（原子操作，跨平台）
+│   ├── lint-docs.ts            # 文档结构校验
+│   └── doc-gardening.ts        # 漂移检测
 └── templates/
     ├── AGENTS.md               # 智能体入口模板
     ├── ARCHITECTURE.md         # 系统架构模板
@@ -54,7 +56,7 @@ harness-engineering/
 export HARNESS_ENGINEERING_SKILL_DIR=/path/to/installed/harness-engineering
 
 # 2. 对目标项目运行 bootstrap
-bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project
+node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.ts" /path/to/project
 
 # 3. 让智能体填充模板（激活 harness-engineering skill）
 
@@ -68,6 +70,74 @@ node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"
 Backend API · Frontend SPA · CLI 工具 · Library/SDK · 全栈 · 微服务
 
 Bootstrap 创建全量骨架，然后按项目类型裁剪不需要的文档。详见 SKILL.md § Scenario 1 Step 3。
+
+---
+
+## 使用指南：怎么跟智能体说
+
+以下是各场景下推荐的 prompt 示例。直接复制或根据实际情况调整即可。
+
+### 初始化项目 Harness 文档
+
+> 为当前项目初始化 Harness 文档体系。这是一个 [Backend API / Frontend SPA / CLI 工具 / Library / 全栈 / 微服务] 项目。
+
+如果不确定项目类型，可以让智能体自行判断：
+
+> 为当前项目初始化 Harness 文档体系，请根据项目结构自动判断项目类型。
+
+### 创建新需求
+
+中任务（4-8 个 task，跨模块或涉及契约变更）：
+
+> 创建一个中任务需求「{需求名}」，需求描述：{一段话描述要做什么}。
+
+大任务（> 8 个 task，跨 3+ 模块，新领域接入）：
+
+> 创建一个大任务需求「{需求名}」，需求描述：{一段话描述要做什么}。
+
+智能体会按 WORKFLOW.md 流程创建需求目录、生成文档、执行三轮审查循环。
+
+### 迭代已有需求文档
+
+对已有需求的 spec/design/plan 进行修改：
+
+> 修改需求「{需求名}」的 design.md，{具体修改内容}。修改后重新执行审查循环。
+
+如果需要从 spec 阶段重新开始：
+
+> 需求「{需求名}」的 spec 需要调整：{变更内容}。请更新 spec 并级联更新 design 和 plan。
+
+### 版本归档
+
+> 将已完成的需求归档为版本 v{X.Y.Z}。
+
+智能体会按 WORKFLOW.md 的版本归档工作流执行 6 步操作。
+
+### 架构变更（RFC）
+
+当需要修改长期约束时：
+
+> 我需要修改 {ARCHITECTURE.md / core-beliefs.md} 中的 {具体约束}。请先创建架构 RFC。
+
+### 文档维护（Gardening）
+
+周期性维护：
+
+> 对当前项目的 Harness 文档执行一次维护检查。
+
+智能体会检查过期文档、已完成但未归档的需求、stale 的 design-doc 等。
+
+### 技术债务登记
+
+> 发现一个技术债务：{问题描述}，影响 {模块}，优先级 {紧急/高/中/低}。请登记到 tech-debt-tracker。
+
+### 小任务（不需要正式文档）
+
+小任务不需要特殊 prompt，正常描述任务即可。智能体会根据 WORKFLOW.md 的分级表自行判断是否需要创建需求目录：
+
+> 帮我 {修复 XXX bug / 添加 XXX 功能 / 重构 XXX}。
+
+---
 
 ## 核心设计原则
 

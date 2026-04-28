@@ -89,7 +89,7 @@ Questions must be specific and evidence-based ("I see Redis in docker-compose bu
 ### Step 1: Run bootstrap script
 
 ```bash
-bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project
+node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.ts" /path/to/project
 ```
 
 Creates full directory structure + template files. Won't overwrite existing files.
@@ -138,6 +138,7 @@ Docs to fill (only retained ones):
 - `docs/PRODUCT_SENSE.md` — target users, principles (if kept)
 - `docs/design-docs/core-beliefs.md` — adapt 10 principles to project
 - `docs/guides/WORKFLOW.md` — adapt task grading thresholds to project scale
+- `docs/guides/REVIEW.md` — adapt review focus points to project domain
 - `docs/guides/SPEC.md` — adapt spec methodology examples to project domain
 - `docs/guides/DESIGN.md` — adapt design doc examples to project tech stack
 - `docs/guides/PLANS.md` — adapt planning conventions to project tooling
@@ -179,15 +180,20 @@ Triggered when creating, modifying, or archiving any Harness document.
 
 ### Creating a new requirement
 
-1. Read `docs/guides/WORKFLOW.md` and choose requirement size:
-   - Medium requirement: create `docs/active/{requirement-name}/`, copy only `design.md` and `plan.md` from `_template/`
-   - Large requirement: copy `docs/active/_template/` as `docs/active/{requirement-name}/`
-2. Fill required files for that workflow:
-   - Medium requirement: `design.md` → `plan.md`
-   - Large requirement: `spec.md` → `design.md` → `plan.md`
-3. Ensure all created files share the same slug in frontmatter `id`
-4. Add entry to `docs/active/index.md`
-5. Run `lint-docs.ts` to verify
+**MANDATORY**: use the `create-requirement.ts` script. Do NOT create requirement directories or files manually.
+
+1. Read `docs/guides/WORKFLOW.md` and determine requirement size (medium or large)
+2. Run the script (from project root):
+   ```bash
+   node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/create-requirement.ts" <slug> <medium|large>
+   ```
+   The script atomically: creates `docs/active/{slug}/`, copies the correct template files (medium = design + plan; large = spec + design + plan), fills frontmatter slugs and dates, and registers the entry in `docs/active/index.md`.
+3. Fill the created files in order, **each file must pass the three-round review cycle** (`docs/guides/REVIEW.md`) before proceeding to the next:
+   - Medium: `design.md` → review cycle → `plan.md` → review cycle
+   - Large: `spec.md` → review cycle → `design.md` → review cycle → `plan.md` → review cycle
+4. Run `lint-docs.ts` to verify
+
+**Why mandatory**: `lint-docs.ts` detects stray requirement docs (spec.md / design.md / plan.md) anywhere outside `docs/active/{slug}/` and fails the build. Manually created files in wrong locations will be rejected.
 
 ### Modifying a long-term constraint (ARCHITECTURE / DESIGN / core-beliefs)
 
@@ -296,7 +302,8 @@ All templates live in `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. Bootstrap cop
 | `AGENTS.md` | Agent entry point (~100 lines) |
 | `ARCHITECTURE.md` | System architecture |
 | `docs/DOMAINS.md` | Business domain boundaries and responsibilities |
-| `docs/guides/WORKFLOW.md` | Requirement workflow (task grading, gates, rollback) |
+| `docs/guides/WORKFLOW.md` | Requirement workflow (task grading, review cycle, rollback) |
+| `docs/guides/REVIEW.md` | Three-round self-review methodology (scoring, pass criteria) |
 | `docs/guides/SPEC.md` | Spec methodology |
 | `docs/guides/DESIGN.md` | Design doc methodology |
 | `docs/guides/PLANS.md` | Planning conventions |
@@ -313,24 +320,28 @@ All templates live in `$HARNESS_ENGINEERING_SKILL_DIR/templates/`. Bootstrap cop
 | `docs/design-docs/index.md` | Project-level design decisions catalog |
 | `docs/design-docs/_template.md` | Design decision template (copy per topic) |
 | `docs/generated/index.md` | Generated docs registry (what to generate, from where) |
+| `docs/generated/_template.md` | Generated doc template (copy per source) |
 
 ### Scripts
 
 | Script | Purpose | Usage |
 |---|---|---|
-| `scripts/bootstrap.sh` | Create Harness skeleton (Linux/macOS) | `bash "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.sh" /path/to/project` |
-| `scripts/bootstrap.ps1` | Create Harness skeleton (Windows) | `powershell -File "$env:HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.ps1" -Target C:\path\to\project` |
-| `scripts/lint-docs.ts` | Validate doc structure, frontmatter, placeholders | `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"` (from project root) |
+| `scripts/bootstrap.ts` | Create Harness skeleton (cross-platform) | `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/bootstrap.ts" [project-root]` |
+| `scripts/create-requirement.ts` | Create requirement dir (atomic, cross-platform) | `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/create-requirement.ts" <slug> <medium\|large>` (from project root) |
+| `scripts/lint-docs.ts` | Validate doc structure, frontmatter, placeholders, stray docs | `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"` (from project root) |
 | `scripts/doc-gardening.ts` | Detect drift, stale docs, archive expiry | `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/doc-gardening.ts"` (from project root) |
 
 ## Versioning
 
-CalVer `YYYY.MM.PATCH`. Current: **2026.04.5**
+CalVer `YYYY.MM.PATCH`. Current: **2026.04.8**
 
 - Template changes (wording, section order) are backward-compatible
 - Adding new files/sections is backward-compatible
 - Renaming/removing existing files is breaking and requires migration notes
 
+**2026.04.8** — Added three-round self-review cycle: new `docs/guides/REVIEW.md` methodology (R1 structure, R2 logic, R3 executability; 4 dimensions per round, 1-5 scoring, pass line 16/20, max 2 fix attempts); rewrote WORKFLOW.md gates from checklists to review cycle references; updated Scenario 2 to mandate review cycle between each document phase.
+**2026.04.7** — Unified all scripts to TypeScript for cross-platform support: replaced `bootstrap.sh` + `bootstrap.ps1` with single `bootstrap.ts`; replaced `create-requirement.sh` with `create-requirement.ts`. All scripts now run via `node` on any OS.
+**2026.04.6** — Hardened requirement creation: added `create-requirement.sh` atomic script (validates args, copies templates, fills frontmatter, registers in index.md); added stray requirement doc detection to `lint-docs.ts` (flags spec.md/design.md/plan.md outside `docs/active/{slug}/`); replaced descriptive creation steps with mandatory script-call instruction in Scenario 2.
 **2026.04.5** — Comprehensive consistency pass: fixed DOMAINS.md systematic omission (added to Templates table, project type table, Step 4 fill list, REFERENCE.md, lint-docs.ts); fixed design-docs/index.md and _template.md missing from bootstrap scripts; rewrote project type table with explicit Keep/Remove for all domain docs; removed PLANS phantom entry; added all 4 guides to Step 4 fill list; fixed completed/ ghost reference; added archive/migrated/ to REFERENCE.md; fixed bootstrap.ps1 parity; clarified DOMAINS.md RFC policy; removed Agent Observability and doc-health.yml ghost references; removed doc-gardening.ts from bootstrap quality checklist; renamed Mode C→B.
 **2026.04.4** — Added Default Behavior section: template as style guide, act-then-report, ask only what can't be inferred. Info gaps use `> **TODO**` blockquotes (not HTML comments) to avoid linter conflict. Migrated originals go to `docs/archive/migrated/` (not `docs/references/`). Bootstrap Step 2 allows selective source reads when metadata is insufficient.
 **2026.04.3** — Reorganized to standard skill directory structure: added README.md, references/, checklists/, scripts/; moved REFERENCE.md and bootstrap scripts.

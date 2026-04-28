@@ -11,6 +11,17 @@
 
 ## 如何添加新需求
 
-1. 复制 `_template/` 为 `{需求名}/`（如 `user-login/`）
-2. 填写 `spec.md` → `design.md` → `plan.md`，三个文件的 frontmatter `id` 使用相同 slug
+按 `docs/guides/WORKFLOW.md` 判断任务级别后：
+
+**中任务**：
+1. 创建目录 `docs/active/{slug}/`
+2. 复制 `docs/active/_template/design.md` 和 `plan.md` 到该目录
+3. 将 frontmatter 中的 `{slug}` 替换为实际需求名，`YYYY-MM-DD` 替换为当天日期
+4. 在上方索引表中添加条目
+
+**大任务**：
+1. 将 `docs/active/_template/` 整个目录复制为 `docs/active/{slug}/`
+2. 将所有文件 frontmatter 中的 `{slug}` 替换为实际需求名，`YYYY-MM-DD` 替换为当天日期
 3. 在上方索引表中添加条目
+
+三个文件的 frontmatter `id` 必须使用相同 slug（如 `spec-user-login`、`design-user-login`、`plan-user-login`）。

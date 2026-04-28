@@ -103,14 +103,14 @@ function checkAgentsMd(issues: Issue[]): void {
 function checkRequiredFiles(issues: Issue[]): void {
   if (!exists("ARCHITECTURE.md")) issues.push({ file: "ARCHITECTURE.md", level: "error", message: "Missing." });
   const required = [
-    "docs/guides/DESIGN.md", "docs/guides/PLANS.md", "docs/guides/SPEC.md", "docs/guides/WORKFLOW.md",
-    "docs/PRODUCT_SENSE.md", "docs/design-docs/core-beliefs.md",
+    "docs/guides/DESIGN.md", "docs/guides/PLANS.md", "docs/guides/SPEC.md", "docs/guides/WORKFLOW.md", "docs/guides/REVIEW.md",
+    "docs/design-docs/core-beliefs.md",
     "docs/active/index.md", "docs/active/tech-debt-tracker.md",
     "docs/archive/index.md",
   ];
   for (const f of required) { if (!exists(f)) issues.push({ file: f, level: "error", message: "Missing required file." }); }
-  // Optional files: only warn if AGENTS.md links to them but they don't exist
-  const optional = ["docs/DOMAINS.md", "docs/QUALITY_SCORE.md", "docs/RELIABILITY.md", "docs/SECURITY.md"];
+  // Optional domain docs: only error if AGENTS.md links to them but they don't exist
+  const optional = ["docs/DOMAINS.md", "docs/PRODUCT_SENSE.md", "docs/QUALITY_SCORE.md", "docs/RELIABILITY.md", "docs/SECURITY.md"];
   if (exists("AGENTS.md")) {
     const agents = read("AGENTS.md");
     for (const f of optional) {
@@ -235,7 +235,7 @@ function checkPlaceholders(issues: Issue[]): void {
       issues.push({ file: path, level: "error", message: "Contains unfilled <!-- --> placeholders. Fill or remove." });
     }
   }
-  for (const file of ["DESIGN.md", "PLANS.md", "SPEC.md", "WORKFLOW.md"]) {
+  for (const file of ["DESIGN.md", "PLANS.md", "SPEC.md", "WORKFLOW.md", "REVIEW.md"]) {
     const path = `docs/guides/${file}`;
     if (!exists(path)) continue;
     if (placeholderRe.test(read(path))) {
@@ -309,6 +309,51 @@ function checkArchiveReleases(issues: Issue[]): void {
   }
 }
 
+/**
+ * Detect requirement docs (spec.md, design.md, plan.md) outside docs/active/{slug}/.
+ * Catches the common agent mistake of creating a lone design.md in the project root,
+ * docs/, or any other non-standard location.
+ */
+function checkStrayRequirementDocs(issues: Issue[]): void {
+  const REQ_FILENAMES = new Set(["spec.md", "design.md", "plan.md"]);
+  // Directories where requirement docs are allowed
+  const ALLOWED_PARENTS = ["docs/active/"];
+  // Template dir is also fine
+  const TEMPLATE_DIR = "docs/active/_template/";
+  // Archive dirs contain historical requirement docs
+  const ARCHIVE_DIR = "docs/archive/";
+  // Skip directories that are project content, not Harness docs
+  const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", "skills", "agents", "prompts", "hooks", "vendor", "target"]);
+
+  function walk(dir: string, rel: string): void {
+    const abs = resolve(dir);
+    if (!existsSync(abs)) return;
+    for (const entry of readdirSync(abs)) {
+      const entryRel = rel ? `${rel}/${entry}` : entry;
+      const entryAbs = join(abs, entry);
+      if (SKIP_DIRS.has(entry)) continue;
+      if (statSync(entryAbs).isDirectory()) {
+        walk(dir + "/" + entry, entryRel);
+        continue;
+      }
+      if (!REQ_FILENAMES.has(entry)) continue;
+      // Check if this file is inside an allowed location
+      const isAllowed = ALLOWED_PARENTS.some(p => entryRel.startsWith(p) && entryRel !== p + entry) // must be in a subdirectory, not directly in docs/active/
+        || entryRel.startsWith(TEMPLATE_DIR)
+        || entryRel.startsWith(ARCHIVE_DIR);
+      if (!isAllowed) {
+        issues.push({
+          file: entryRel,
+          level: "error",
+          message: `Stray requirement doc. Requirement files must live in docs/active/{slug}/. Use create-requirement.ts to create requirements.`,
+        });
+      }
+    }
+  }
+
+  walk(".", "");
+}
+
 function lintDocs(): Issue[] {
   const issues: Issue[] = [];
   checkAgentsMd(issues);
@@ -319,6 +364,7 @@ function lintDocs(): Issue[] {
   checkArchiveExpiry(issues);
   checkArchiveReleases(issues);
   checkPlaceholders(issues);
+  checkStrayRequirementDocs(issues);
   return issues;
 }
 

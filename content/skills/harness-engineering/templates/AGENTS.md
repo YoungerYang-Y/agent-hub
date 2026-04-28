@@ -39,7 +39,8 @@
 ### C. 元规范（方法论，智能体读后再动手）
 
 - 产品思维与功能流转：`docs/PRODUCT_SENSE.md`
-- 需求工作流（spec → design → plan 全流程、门禁、回退规则）：`docs/guides/WORKFLOW.md`
+- 需求工作流（spec → design → plan 全流程、审查循环、回退规则）：`docs/guides/WORKFLOW.md`
+- 审查方法论（三轮自审循环、评分标准、通过条件）：`docs/guides/REVIEW.md`
 - 产品规格规范（如何写 spec）：`docs/guides/SPEC.md`
 - 设计文档方法论（如何写 design.md）：`docs/guides/DESIGN.md`
 - 计划规范（如何拆解和执行任务）：`docs/guides/PLANS.md`
