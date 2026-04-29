@@ -32,6 +32,9 @@ function listDirs(dir: string): string[] {
   const d = resolve(dir); if (!existsSync(d)) return [];
   return readdirSync(d).filter(f => f !== "_template" && statSync(join(d, f)).isDirectory());
 }
+function listArchiveVersionDirs(): string[] {
+  return listDirs("docs/archive").filter(dir => dir.startsWith("v"));
+}
 
 function parseFrontmatter(content: string): Record<string, string> | null {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
@@ -94,7 +97,7 @@ function checkArchiveExpiry(): void {
   const retentionMatch = content.match(/保留期限[：:]\s*(\d+)\s*个月/);
   const retentionMonths = retentionMatch ? parseInt(retentionMatch[1]) : 12;
 
-  for (const dir of listDirs("docs/archive")) {
+  for (const dir of listArchiveVersionDirs()) {
     const releasePath = `docs/archive/${dir}/release.md`;
     if (!exists(releasePath)) continue;
     const fm = parseFrontmatter(read(releasePath));
@@ -116,7 +119,7 @@ function checkArchiveExpiry(): void {
 
 // 4b. Archive version chain consistency
 function checkVersionChain(): void {
-  const versionDirs = listDirs("docs/archive");
+  const versionDirs = listArchiveVersionDirs();
   for (const dir of versionDirs) {
     const releasePath = `docs/archive/${dir}/release.md`;
     if (!exists(releasePath)) {
@@ -137,6 +140,7 @@ function checkVersionChain(): void {
 // 5. Generated docs freshness
 function checkGenerated(): void {
   for (const f of listMd("docs/generated")) {
+    if (f === "index.md" || f.startsWith("_")) continue;
     const content = read(`docs/generated/${f}`);
     const tsMatch = content.match(/(?:Last generated|最后生成)[：:]\s*(\d{4}-\d{2}-\d{2})/);
     if (!tsMatch) {

@@ -323,7 +323,7 @@ function checkStrayRequirementDocs(issues: Issue[]): void {
   // Archive dirs contain historical requirement docs
   const ARCHIVE_DIR = "docs/archive/";
   // Skip directories that are project content, not Harness docs
-  const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", "skills", "agents", "prompts", "hooks", "vendor", "target"]);
+  const SKIP_DIRS = new Set(["node_modules", ".git", ".tmp-tests", "dist", "build", "skills", "agents", "prompts", "hooks", "vendor", "target"]);
 
   function walk(dir: string, rel: string): void {
     const abs = resolve(dir);

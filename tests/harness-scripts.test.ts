@@ -6,8 +6,8 @@ import { describe, expect, test } from "vitest";
 const skillRoot = join(process.cwd(), "content/skills/harness-engineering");
 
 describe("harness-engineering installed scripts", () => {
-  test("bash bootstrap script uses LF line endings", () => {
-    const content = readFileSync(join(skillRoot, "scripts/bootstrap.sh"), "utf-8");
+  test("TypeScript bootstrap script uses LF line endings", () => {
+    const content = readFileSync(join(skillRoot, "scripts/bootstrap.ts"), "utf-8");
 
     expect(content).not.toContain("\r\n");
   });
@@ -39,9 +39,31 @@ describe("harness-engineering installed scripts", () => {
     expect(result.stdout).toContain("Doc health check passed");
   });
 
+  test("lint-docs ignores ignored temporary test artifacts", async () => {
+    const projectRoot = copyHarnessTemplates("ignored-temp-artifacts");
+    fillTemplatePlaceholders(projectRoot);
+    rmSync(join(projectRoot, "docs/RELIABILITY.md"));
+    rmSync(join(projectRoot, "docs/QUALITY_SCORE.md"));
+    const agentsPath = join(projectRoot, "AGENTS.md");
+    const agents = readFileSync(agentsPath, "utf-8")
+      .split("\n")
+      .filter((line) => !line.includes("docs/RELIABILITY.md") && !line.includes("docs/QUALITY_SCORE.md"))
+      .join("\n");
+    writeFileSync(agentsPath, agents);
+    mkdirSync(join(projectRoot, ".tmp-tests/stale-run/docs/active/_template"), { recursive: true });
+    writeFileSync(join(projectRoot, ".tmp-tests/stale-run/docs/active/_template/design.md"), "# stale fixture\n");
+
+    const result = await runNodeScript(projectRoot, "scripts/lint-docs.ts");
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Doc health check passed");
+  });
+
   test("doc-gardening ignores placeholder design catalog links and status legend", async () => {
     const projectRoot = copyHarnessTemplates("fresh-gardening");
     fillQualityScoreDate(projectRoot);
+    mkdirSync(join(projectRoot, "docs/archive/migrated"), { recursive: true });
+    writeFileSync(join(projectRoot, "docs/archive/migrated/migrated-from-AGENTS.md"), "# Old agent guide\n");
 
     const result = await runNodeScript(projectRoot, "scripts/doc-gardening.ts");
 
