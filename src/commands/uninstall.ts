@@ -29,9 +29,14 @@ export function runUninstall(repoRoot: string, target: string, options: Uninstal
     return;
   }
 
-  console.log(`${options.dryRun ? "Planned removal of" : "Removed"} ${result.operations.length} managed resource(s) for ${adapter.displayName}:`);
+  const action = options.dryRun ? "Plan removal" : "Removed";
+  console.log(`\n${action}: ${result.operations.length} resource(s) ← ${adapter.displayName}\n`);
+  
   for (const operation of result.operations) {
-    console.log(`- ${operation.id}: ${operation.destinationPath} (${operation.destinationState})`);
+    const dest = operation.destinationPath.replace(process.env.HOME || "", "~");
+    console.log(`  ✗ ${operation.id}`);
+    console.log(`    ${dest} (${operation.destinationState})\n`);
   }
+  
   console.log(`Manifest: ${manifestPath}`);
 }
