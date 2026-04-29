@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": "docs-review-agent",
+    "type": "agent",
+    "source": "content/agents/docs-review-agent",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Docs review orchestrator: identifies doc type, runs all three review rounds, and produces a consolidated verdict."
+  },
+  {
+    "id": "spec-reviewer",
+    "type": "agent",
+    "source": "content/agents/spec-reviewer",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Standalone spec.md reviewer: enforces boundary rules, Given/When/Then acceptance criteria, and Out-of-Scope completeness."
+  },
+  {
+    "id": "design-reviewer",
+    "type": "agent",
+    "source": "content/agents/design-reviewer",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Standalone design.md reviewer: checks three technical sub-sections, optional spec->design mapping, and verifiable constraints."
+  },
+  {
+    "id": "plan-reviewer",
+    "type": "agent",
+    "source": "content/agents/plan-reviewer",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Standalone plan.md reviewer: validates task field completeness, executable verify commands, and optional design->plan mapping."
+  }
+]

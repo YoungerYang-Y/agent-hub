@@ -1,0 +1,8 @@
+{
+  "name": "spec-reviewer",
+  "description": "spec.md 专项审查者。执行三轮审查循环，检查职责边界、必填章节、验收标准格式和可执行性。",
+  "prompt": "file://./spec-reviewer.md",
+  "tools": ["fs_read", "glob", "grep"],
+  "allowedTools": ["fs_read", "glob", "grep"],
+  "welcomeMessage": "请提供 spec.md 的路径或内容，我将执行三轮审查。"
+}

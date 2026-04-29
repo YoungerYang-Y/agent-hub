@@ -1,0 +1,8 @@
+{
+  "name": "plan-reviewer",
+  "description": "plan.md 专项审查者。执行三轮审查循环，检查任务字段完整性、verify 可执行性和 design->plan 映射。",
+  "prompt": "file://./plan-reviewer.md",
+  "tools": ["fs_read", "glob", "grep"],
+  "allowedTools": ["fs_read", "glob", "grep"],
+  "welcomeMessage": "请提供 plan.md 的路径或内容，我将执行三轮审查。如果同目录有 design.md，我会一并读取用于映射检查。"
+}

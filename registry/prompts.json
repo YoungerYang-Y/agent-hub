@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": "docs-review-agent",
+    "type": "prompt",
+    "source": "content/agents/docs-review-agent/docs-review-agent.md",
+    "targets": ["codex", "claude-code"],
+    "default": true,
+    "description": "Docs review orchestrator prompt: identifies doc type, runs all three review rounds, and produces a consolidated verdict."
+  },
+  {
+    "id": "spec-reviewer",
+    "type": "prompt",
+    "source": "content/agents/spec-reviewer/spec-reviewer.md",
+    "targets": ["codex", "claude-code"],
+    "default": true,
+    "description": "Standalone spec.md reviewer prompt: enforces boundary rules, Given/When/Then acceptance criteria, and Out-of-Scope completeness."
+  },
+  {
+    "id": "design-reviewer",
+    "type": "prompt",
+    "source": "content/agents/design-reviewer/design-reviewer.md",
+    "targets": ["codex", "claude-code"],
+    "default": true,
+    "description": "Standalone design.md reviewer prompt: checks three technical sub-sections, optional spec->design mapping, and verifiable constraints."
+  },
+  {
+    "id": "plan-reviewer",
+    "type": "prompt",
+    "source": "content/agents/plan-reviewer/plan-reviewer.md",
+    "targets": ["codex", "claude-code"],
+    "default": true,
+    "description": "Standalone plan.md reviewer prompt: validates task field completeness, executable verify commands, and optional design->plan mapping."
+  }
+]
