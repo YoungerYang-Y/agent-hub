@@ -1,7 +1,20 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { hashPath } from "./hash.js";
 import type { HubResource, HubResourceType, HubTarget } from "./manifest.js";
+
+function cleanupKiroAgentPrompts(target: HubTarget, resourceType: HubResourceType, destinationPath: string): void {
+  if (target === "kiro" && resourceType === "agent") {
+    const dir = dirname(destinationPath);
+    const baseName = basename(destinationPath, ".json");
+    const promptFiles = ["md", "txt"].map(ext => join(dir, `${baseName}.${ext}`));
+    for (const promptFile of promptFiles) {
+      if (existsSync(promptFile)) {
+        rmSync(promptFile, { force: true });
+      }
+    }
+  }
+}
 
 export interface ManagedManifest {
   version: 1;
@@ -136,6 +149,7 @@ export function uninstallManagedResources(options: UninstallManagedResourcesOpti
 
     if (!options.dryRun && destinationState === "present") {
       rmSync(destinationPath, { recursive: true, force: true });
+      cleanupKiroAgentPrompts(options.target, resource.type, destinationPath);
     }
   }
 
@@ -178,6 +192,7 @@ export function pruneManagedResources(options: PruneManagedResourcesOptions): { 
 
     if (!options.dryRun && destinationState === "present") {
       rmSync(destinationPath, { recursive: true, force: true });
+      cleanupKiroAgentPrompts(options.target, resource.type, destinationPath);
     }
   }
 

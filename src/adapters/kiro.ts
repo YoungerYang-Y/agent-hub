@@ -15,6 +15,19 @@ export function createKiroAdapter(): AgentAdapter {
     },
     resolveInstallDestination(resource: HubResource, options: ConfigResolutionOptions): InstallDestination {
       const configDir = this.resolveConfigDir(options);
+      
+      // For agents, flatten: content/agents/dev -> agents/dev.json
+      if (resource.type === "agent") {
+        const agentName = sourceBasename(resource.source);
+        const relativePath = join("agents", `${agentName}.json`);
+        return {
+          configDir,
+          relativePath,
+          absolutePath: join(configDir, relativePath),
+        };
+      }
+      
+      // For other types, preserve directory structure
       const relativePath = join(resourceTypeDirectory(resource.type), sourceBasename(resource.source));
       return {
         configDir,
