@@ -59,5 +59,5 @@ npm run build
 npm test
 node dist/cli.js list
 node dist/cli.js install codex --dry-run
-node content/skills/harness-engineering/scripts/lint-docs.ts
+node content/skills/harness-docs/scripts/lint-docs.ts
 ```

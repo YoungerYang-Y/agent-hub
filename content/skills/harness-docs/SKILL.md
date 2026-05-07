@@ -1,5 +1,5 @@
 ---
-name: harness-engineering
+name: harness-docs
 description: Agent-first documentation system for AI-driven codebases — structured knowledge bases, progressive disclosure, executable constraints, and feedback loops that keep agents effective at scale.
 ---
 

@@ -3,9 +3,9 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, test } from "vitest";
 
-const skillRoot = join(process.cwd(), "content/skills/harness-engineering");
+const skillRoot = join(process.cwd(), "content/skills/harness-docs");
 
-describe("harness-engineering installed scripts", () => {
+describe("harness-docs installed scripts", () => {
   test("TypeScript bootstrap script uses LF line endings", () => {
     const content = readFileSync(join(skillRoot, "scripts/bootstrap.ts"), "utf-8");
 
@@ -16,8 +16,8 @@ describe("harness-engineering installed scripts", () => {
     const skillDoc = readFileSync(join(skillRoot, "SKILL.md"), "utf-8");
     const readme = readFileSync(join(skillRoot, "README.md"), "utf-8");
 
-    expect(skillDoc).not.toContain("~/.kiro/skills/harness-engineering");
-    expect(readme).not.toContain("~/.kiro/skills/harness-engineering");
+    expect(skillDoc).not.toContain("~/.kiro/skills/harness-docs");
+    expect(readme).not.toContain("~/.kiro/skills/harness-docs");
     expect(skillDoc).toContain("$HARNESS_ENGINEERING_SKILL_DIR");
   });
 

@@ -14,7 +14,7 @@ Agent Hub 是本地 CLI，不提供线上服务，因此可靠性重点是可重
 | Unit tests | 测试可重复运行 | 不适用 | 0 个失败测试 | `npm test` |
 | Registry listing | 能列出所有有效资源 | < 1s（本地小仓库） | 0 个 manifest error | `node dist/cli.js list` |
 | Install dry-run | 不写目标也能展示计划 | < 1s（默认资源） | 0 个未解释冲突 | `node dist/cli.js install codex --dry-run` |
-| Doc health | Harness 文档结构有效 | 不适用 | 0 个 error | `node content/skills/harness-engineering/scripts/lint-docs.ts` |
+| Doc health | Harness 文档结构有效 | 不适用 | 0 个 error | `node content/skills/harness-docs/scripts/lint-docs.ts` |
 
 ## 可观测性要求
 

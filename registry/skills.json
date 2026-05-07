@@ -1,8 +1,8 @@
 [
   {
-    "id": "harness-engineering",
+    "id": "harness-docs",
     "type": "skill",
-    "source": "content/skills/harness-engineering",
+    "source": "content/skills/harness-docs",
     "targets": ["codex", "kiro", "claude-code"],
     "default": true,
     "description": "Agent-first documentation system for AI-driven codebases."

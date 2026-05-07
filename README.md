@@ -103,7 +103,7 @@ node dist/cli.js status all
 
 ```bash
 # 只安装指定资源（即使它不是 default）
-node dist/cli.js install codex --resource harness-engineering
+node dist/cli.js install codex --resource harness-docs
 
 # 只安装默认 skill
 node dist/cli.js install codex --type skill
@@ -126,7 +126,7 @@ node dist/cli.js status codex
 node dist/cli.js uninstall codex --dry-run
 
 # 只卸载单个受管资源
-node dist/cli.js uninstall codex --resource harness-engineering
+node dist/cli.js uninstall codex --resource harness-docs
 ```
 
 `uninstall` 只删除 manifest 中记录的受管目标，不会删除未由 agent-hub 管理的本地文件。
@@ -152,4 +152,4 @@ node dist/cli.js prune all
 
 ## 当前资源
 
-- `content/skills/harness-engineering/`：Harness Engineering 文档体系 skill。
+- `content/skills/harness-docs/`：Harness Engineering 文档体系 skill。

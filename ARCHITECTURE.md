@@ -6,7 +6,7 @@ Agent Hub 是一个 TypeScript CLI 和内容仓库，用于集中维护 AI agent
 
 系统的核心目标是可审计、可回滚、不会误删用户本地配置。安装流程通过目标 adapter 解析目标目录，通过 registry 选择资源，通过 copy/hash/managed manifest 记录 agent-hub 管理的文件。CLI 不依赖服务端、数据库或常驻进程。
 
-项目本身也是 Harness Engineering skill 的内容源，`content/skills/harness-engineering/` 会像普通资源一样被安装到目标 agent。修改该 skill 时要同时考虑 skill 运行时体验、模板质量、脚本可移植性和 agent-hub 的复制安装语义。
+项目本身也是 Harness Engineering skill 的内容源，`content/skills/harness-docs/` 会像普通资源一样被安装到目标 agent。修改该 skill 时要同时考虑 skill 运行时体验、模板质量、脚本可移植性和 agent-hub 的复制安装语义。
 
 ## 业务领域
 

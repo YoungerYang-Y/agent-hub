@@ -80,7 +80,7 @@ npm test
 node dist/cli.js list
 node dist/cli.js install codex --dry-run
 node dist/cli.js install all --dry-run
-node content/skills/harness-engineering/scripts/lint-docs.ts
+node content/skills/harness-docs/scripts/lint-docs.ts
 ```
 
 涉及真实目标目录写入时，优先使用临时目录：
