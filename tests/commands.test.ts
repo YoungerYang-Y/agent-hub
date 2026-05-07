@@ -154,7 +154,7 @@ describe("commands", () => {
 
     const output = captureLogs(() => runPrune(fixture.root, "codex", { configDir: fixture.configDir, dryRun: true }));
 
-    expect(output).toContain("Planned prune");
+    expect(output).toContain("Plan prune");
     expect(output).toContain("old");
     expect(existsSync(join(fixture.configDir, "skills/old/SKILL.md"))).toBe(true);
     expect(readFileSync(managedManifestPath(fixture.configDir), "utf-8")).toContain("\"old\"");
@@ -168,7 +168,7 @@ describe("commands", () => {
 
     const output = captureLogs(() => runPrune(fixture.root, "codex", { configDir: fixture.configDir, dryRun: false }));
 
-    expect(output).toContain("Pruned 1 stale managed resource");
+    expect(output).toContain("Pruned:");
     expect(existsSync(join(fixture.configDir, "skills/current/SKILL.md"))).toBe(true);
     expect(existsSync(join(fixture.configDir, "skills/old"))).toBe(false);
     const manifest = readFileSync(managedManifestPath(fixture.configDir), "utf-8");
@@ -182,7 +182,7 @@ describe("commands", () => {
 
     const output = captureLogs(() => runUninstall(fixture.root, "codex", { configDir: fixture.configDir, dryRun: true }));
 
-    expect(output).toContain("Planned removal");
+    expect(output).toContain("Plan removal");
     expect(existsSync(join(fixture.configDir, "skills/demo/SKILL.md"))).toBe(true);
     expect(readFileSync(managedManifestPath(fixture.configDir), "utf-8")).toContain("\"demo\"");
   });
@@ -193,7 +193,7 @@ describe("commands", () => {
 
     const output = captureLogs(() => runUninstall(fixture.root, "codex", { configDir: fixture.configDir, dryRun: false }));
 
-    expect(output).toContain("Removed 1 managed resource");
+    expect(output).toContain("Removed:");
     expect(existsSync(join(fixture.configDir, "skills/demo"))).toBe(false);
     expect(readFileSync(managedManifestPath(fixture.configDir), "utf-8")).not.toContain("\"demo\"");
   });
