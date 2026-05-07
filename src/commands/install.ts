@@ -48,13 +48,33 @@ export function runInstall(repoRoot: string, target: string, options: InstallCom
   const action = options.dryRun ? "Plan" : "Installed";
   console.log(`\n${action}: ${result.operations.length} resource(s) → ${adapter.displayName}\n`);
   
+  // Group by type
+  const byType = new Map<string, Array<{id: string, isNew: boolean}>>();
   for (const operation of result.operations) {
     const resource = resources.find(r => r.id === operation.resourceId);
-    const typeIcon = getTypeIcon(resource?.type || 'unknown', operation.resourceId);
-    const source = operation.source.replace(repoRoot + "/", "");
-    const dest = operation.destination.replace(process.env.HOME || "", "~");
-    console.log(`  ${typeIcon} ${operation.resourceId}`);
-    console.log(`    ${source} → ${dest}\n`);
+    const type = resource?.type || 'unknown';
+    if (!byType.has(type)) byType.set(type, []);
+    byType.get(type)!.push({id: operation.resourceId, isNew: operation.isNew});
+  }
+  
+  // Display summary table
+  console.log('┌─────────────┬───────┐');
+  console.log('│ Type        │ Count │');
+  console.log('├─────────────┼───────┤');
+  for (const [type, items] of byType) {
+    const icon = getTypeIcon(type, '');
+    console.log(`│ ${icon} ${type.padEnd(8)} │ ${items.length.toString().padStart(5)} │`);
+  }
+  console.log('└─────────────┴───────┘\n');
+  
+  // Display resource IDs by type with status
+  for (const [type, items] of byType) {
+    console.log(`  ${type}:`);
+    for (const item of items) {
+      const status = item.isNew ? '+ new' : '↻ update';
+      console.log(`    ${status.padEnd(8)} ${item.id}`);
+    }
+    console.log();
   }
   
   if (!options.dryRun) console.log(`Manifest: ${result.manifestPath}`);
