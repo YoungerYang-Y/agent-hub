@@ -1,8 +1,0 @@
-{
-  "name": "design-reviewer",
-  "description": "design.md 专项审查者。执行三轮审查循环，检查技术方案三子节、spec->design 映射和约束可验证性。",
-  "prompt": "file://./design-reviewer.md",
-  "tools": ["fs_read", "glob", "grep"],
-  "allowedTools": ["fs_read", "glob", "grep"],
-  "welcomeMessage": "请提供 design.md 的路径或内容，我将执行三轮审查。如果同目录有 spec.md，我会一并读取用于映射检查。"
-}

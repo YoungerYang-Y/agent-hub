@@ -1,8 +1,0 @@
-{
-  "name": "docs-review-agent",
-  "description": "文档审查总协调者。识别 spec/design/plan 文档类型，执行三轮审查循环，输出综合裁决报告。",
-  "prompt": "file://./docs-review-agent.md",
-  "tools": ["fs_read", "glob", "grep"],
-  "allowedTools": ["fs_read", "glob", "grep"],
-  "welcomeMessage": "请提供要审查的文档路径或目录，我将识别文档类型并执行三轮审查。"
-}
