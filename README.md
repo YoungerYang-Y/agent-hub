@@ -152,4 +152,10 @@ node dist/cli.js prune all
 
 ## 当前资源
 
-- `content/skills/harness-docs/`：Harness Engineering 文档体系 skill。
+运行以下命令查看所有已注册资源：
+
+```bash
+node dist/cli.js list
+```
+
+当前包含 5 个 skills 和 2 个 agents，支持 Codex、Kiro、Claude Code 三个目标。
