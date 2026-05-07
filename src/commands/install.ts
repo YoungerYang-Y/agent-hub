@@ -7,7 +7,7 @@ function getTypeIcon(type: string, resourceId: string): string {
   if (resourceId.includes('agent') || resourceId.includes('reviewer')) {
     return '🤖';
   }
-  
+
   switch (type) {
     case 'skill': return '🔧';
     case 'agent': return '🤖';
@@ -47,7 +47,7 @@ export function runInstall(repoRoot: string, target: string, options: InstallCom
 
   const action = options.dryRun ? "Plan" : "Installed";
   console.log(`\n${action}: ${result.operations.length} resource(s) → ${adapter.displayName}\n`);
-  
+
   // Group by type
   const byType = new Map<string, Array<{id: string, isNew: boolean}>>();
   for (const operation of result.operations) {
@@ -56,7 +56,7 @@ export function runInstall(repoRoot: string, target: string, options: InstallCom
     if (!byType.has(type)) byType.set(type, []);
     byType.get(type)!.push({id: operation.resourceId, isNew: operation.isNew});
   }
-  
+
   // Display summary table
   console.log('┌─────────────┬───────┐');
   console.log('│ Type        │ Count │');
@@ -66,7 +66,7 @@ export function runInstall(repoRoot: string, target: string, options: InstallCom
     console.log(`│ ${icon} ${type.padEnd(8)} │ ${items.length.toString().padStart(5)} │`);
   }
   console.log('└─────────────┴───────┘\n');
-  
+
   // Display resource IDs by type with status
   for (const [type, items] of byType) {
     console.log(`  ${type}:`);
@@ -76,6 +76,6 @@ export function runInstall(repoRoot: string, target: string, options: InstallCom
     }
     console.log();
   }
-  
+
   if (!options.dryRun) console.log(`Manifest: ${result.manifestPath}`);
 }

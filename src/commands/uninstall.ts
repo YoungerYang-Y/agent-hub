@@ -31,12 +31,12 @@ export function runUninstall(repoRoot: string, target: string, options: Uninstal
 
   const action = options.dryRun ? "Plan removal" : "Removed";
   console.log(`\n${action}: ${result.operations.length} resource(s) ← ${adapter.displayName}\n`);
-  
+
   for (const operation of result.operations) {
     const dest = operation.destinationPath.replace(process.env.HOME || "", "~");
     console.log(`  ✗ ${operation.id}`);
     console.log(`    ${dest} (${operation.destinationState})\n`);
   }
-  
+
   console.log(`Manifest: ${manifestPath}`);
 }

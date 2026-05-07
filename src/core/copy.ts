@@ -54,7 +54,7 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
       if (existsSync(oldPath)) {
         rmSync(oldPath, { recursive: true, force: true });
       }
-      
+
       // For Kiro agents, also clean up old prompt files
       if (adapter.id === "kiro" && resource.type === "agent") {
         const oldDir = dirname(oldPath);
@@ -91,7 +91,7 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
 
     mkdirSync(dirname(destination.absolutePath), { recursive: true });
     if (existsSync(destination.absolutePath)) rmSync(destination.absolutePath, { recursive: true, force: true });
-    
+
     // Special handling for Kiro agents: flatten directory contents
     if (adapter.id === "kiro" && resource.type === "agent") {
       const agentJsonPath = join(sourcePath, "agent.json");
@@ -100,13 +100,13 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
       }
       // Copy agent.json to destination (e.g., dev.json)
       cpSync(agentJsonPath, destination.absolutePath);
-      
+
       // Copy prompt files to same directory if they exist
       const agentName = basename(sourcePath);
-      const promptFiles = ["md", "txt"].map(ext => 
+      const promptFiles = ["md", "txt"].map(ext =>
         join(sourcePath, `${agentName}.${ext}`)
       ).filter(existsSync);
-      
+
       for (const promptFile of promptFiles) {
         const promptDest = join(dirname(destination.absolutePath), basename(promptFile));
         cpSync(promptFile, promptDest);
@@ -130,12 +130,12 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
     const existingByIdIndex = nextResources.findIndex(
       (item) => item.target === adapter.id && item.id === resource.id,
     );
-    
+
     // Remove old entry by id if path changed
     if (existingByIdIndex >= 0 && nextResources[existingByIdIndex].destination !== destinationRelativeToConfig) {
       nextResources.splice(existingByIdIndex, 1);
     }
-    
+
     // Update or add new entry
     const finalIndex = nextResources.findIndex(
       (item) => item.target === adapter.id && item.destination === destinationRelativeToConfig,
