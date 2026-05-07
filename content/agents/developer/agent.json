@@ -1,0 +1,37 @@
+{
+  "name": "developer",
+  "description": "默认开发 agent，配置常用工具和权限，适用于日常开发任务。",
+  "prompt": "file://./developer.md",
+  "tools": ["*"],
+  "allowedTools": [
+    "read",
+    "code",
+    "grep",
+    "glob",
+    "knowledge",
+    "introspect"
+  ],
+  "toolsSettings": {
+    "write": {
+      "allowedPaths": ["~/**"]
+    },
+    "shell": {
+      "autoAllowReadonly": true,
+      "allowedCommands": [
+        "node", "npm", "pnpm", "yarn",
+        "java", "mvn", "maven", "gradle",
+        "python", "python3", "cargo", "go", "make",
+        "git", "mise", "nvm",
+        "jest", "vitest", "pytest", "eslint", "tsc"
+      ]
+    }
+  },
+  "resources": [
+    "file://README.md",
+    "file://AGENTS.md",
+    "file://ARCHITECTURE.md",
+    "file://$KIRO_HOME/skills/**",
+    "file://.kiro/skills/**"
+  ],
+  "welcomeMessage": "开发 agent 已就绪。我可以帮你进行代码开发、测试、调试和文档编写。"
+}

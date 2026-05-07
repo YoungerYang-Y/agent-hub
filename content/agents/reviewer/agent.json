@@ -1,0 +1,37 @@
+{
+  "name": "reviewer",
+  "description": "总审查协调者，识别审查类型（文档/代码），调用专项审查 agent 或执行代码审查。",
+  "prompt": "file://./reviewer.md",
+  "tools": [
+    "read",
+    "code",
+    "grep",
+    "glob",
+    "subagent",
+    "shell"
+  ],
+  "allowedTools": [
+    "read",
+    "code",
+    "grep",
+    "glob"
+  ],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": [
+        "git diff*", "git show*", "git log*",
+        "node", "npm", "pnpm", "yarn",
+        "java", "mvn", "maven", "gradle",
+        "python", "python3", "cargo", "go", "make",
+        "eslint", "tsc", "jest", "vitest", "pytest"
+      ],
+      "autoAllowReadonly": true
+    }
+  },
+  "resources": [
+    "file://docs/active/**/*.md",
+    "file://$KIRO_HOME/skills/**",
+    "file://.kiro/skills/**"
+  ],
+  "welcomeMessage": "审查 agent 已就绪。我可以审查文档（spec/design/plan）或代码，请提供要审查的内容。"
+}
