@@ -99,18 +99,18 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
       if (!existsSync(agentJsonPath)) {
         throw new Error(`Agent source ${sourcePath} must contain agent.json`);
       }
-      
+
       // Read, process, and write agent.json with expanded paths
       const agentContent = readFileSync(agentJsonPath, "utf-8");
       const agentJson = JSON.parse(agentContent);
-      
+
       // Expand ~ to absolute home directory in resources array
       if (Array.isArray(agentJson.resources)) {
-        agentJson.resources = agentJson.resources.map((res: string) => 
+        agentJson.resources = agentJson.resources.map((res: string) =>
           res.replace(/~\//g, homeDirectory().replace(/\\/g, "/") + "/")
         );
       }
-      
+
       // Expand ~ to absolute home directory in hooks commands
       if (agentJson.hooks && typeof agentJson.hooks === 'object') {
         for (const hookType of Object.keys(agentJson.hooks)) {
@@ -124,7 +124,7 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
           }
         }
       }
-      
+
       writeFileSync(destination.absolutePath, JSON.stringify(agentJson, null, 2), "utf-8");
 
       // Copy prompt files to same directory if they exist
