@@ -29,9 +29,13 @@
     }
   },
   "resources": [
+    "file://README.md",
+    "file://AGENTS.md",
+    "file://ARCHITECTURE.md",
     "file://docs/active/**/*.md",
-    "file://$KIRO_HOME/skills/**",
-    "file://.kiro/skills/**"
+    "skill://~/.kiro/skills/**/SKILL.md",
+    "skill://.kiro/skills/**/SKILL.md",
+    "skill://docs/skills/**/SKILL.md"
   ],
   "welcomeMessage": "审查 agent 已就绪。我可以审查文档（spec/design/plan）或代码，请提供要审查的内容。"
 }
