@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "validate-write",
+    "type": "hook",
+    "source": "content/hooks/validate-write.ts",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Pre-write validation hook for file operations."
+  },
+  {
+    "id": "post-write",
+    "type": "hook",
+    "source": "content/hooks/post-write.ts",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Post-write processing hook for documentation updates."
+  },
+  {
+    "id": "format-code",
+    "type": "hook",
+    "source": "content/hooks/format-code.ts",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Code formatting hook for response completion."
+  }
+]

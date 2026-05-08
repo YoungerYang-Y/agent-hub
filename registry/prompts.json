@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "id": "review-spec",
+    "type": "prompt",
+    "source": "content/prompts/review-spec.md",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Quick spec.md document review using spec-reviewer skill."
+  },
+  {
+    "id": "review-design",
+    "type": "prompt",
+    "source": "content/prompts/review-design.md",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Quick design.md document review using design-reviewer skill."
+  },
+  {
+    "id": "review-plan",
+    "type": "prompt",
+    "source": "content/prompts/review-plan.md",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Quick plan.md document review using plan-reviewer skill."
+  },
+  {
+    "id": "harness-bootstrap",
+    "type": "prompt",
+    "source": "content/prompts/harness-bootstrap.md",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Initialize Harness documentation system for new projects."
+  },
+  {
+    "id": "code-review",
+    "type": "prompt",
+    "source": "content/prompts/code-review.md",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Code review workflow using reviewer agent."
+  },
+  {
+    "id": "dev-workflow",
+    "type": "prompt",
+    "source": "content/prompts/dev-workflow.md",
+    "targets": ["kiro"],
+    "default": true,
+    "description": "Standard development workflow process."
+  }
+]

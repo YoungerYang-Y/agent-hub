@@ -34,5 +34,33 @@
     "skill://.kiro/skills/**/SKILL.md",
     "skill://docs/skills/**/SKILL.md"
   ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "git status --porcelain",
+        "description": "显示工作区状态"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "write",
+        "command": "node ~/.kiro/hooks/validate-write.ts",
+        "description": "写文件前检查"
+      }
+    ],
+    "postToolUse": [
+      {
+        "matcher": "write",
+        "command": "node ~/.kiro/hooks/post-write.ts",
+        "description": "写文件后处理"
+      }
+    ],
+    "stop": [
+      {
+        "command": "node ~/.kiro/hooks/format-code.ts",
+        "description": "响应结束后格式化代码"
+      }
+    ]
+  },
   "welcomeMessage": "开发 agent 已就绪。我可以帮你进行代码开发、测试、调试和文档编写。"
 }

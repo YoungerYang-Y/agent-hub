@@ -37,5 +37,20 @@
     "skill://.kiro/skills/**/SKILL.md",
     "skill://docs/skills/**/SKILL.md"
   ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "git log --oneline -5",
+        "description": "显示最近提交"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "subagent",
+        "command": "echo 'Starting review process...'",
+        "description": "开始审查流程"
+      }
+    ]
+  },
   "welcomeMessage": "审查 agent 已就绪。我可以审查文档（spec/design/plan）或代码，请提供要审查的内容。"
 }

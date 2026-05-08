@@ -111,6 +111,20 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
         );
       }
       
+      // Expand ~ to absolute home directory in hooks commands
+      if (agentJson.hooks && typeof agentJson.hooks === 'object') {
+        for (const hookType of Object.keys(agentJson.hooks)) {
+          if (Array.isArray(agentJson.hooks[hookType])) {
+            agentJson.hooks[hookType] = agentJson.hooks[hookType].map((hook: any) => {
+              if (hook.command && typeof hook.command === 'string') {
+                hook.command = hook.command.replace(/~\//g, homeDirectory().replace(/\\/g, "/") + "/");
+              }
+              return hook;
+            });
+          }
+        }
+      }
+      
       writeFileSync(destination.absolutePath, JSON.stringify(agentJson, null, 2), "utf-8");
 
       // Copy prompt files to same directory if they exist
