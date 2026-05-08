@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { defaultToolHome } from "../core/platform.js";
+import { defaultHiddenHome } from "../core/platform.js";
 import { sourceBasename } from "../core/paths.js";
 import type { HubResource } from "../core/manifest.js";
 import type { AgentAdapter, ConfigResolutionOptions, InstallDestination } from "./types.js";
@@ -11,7 +11,7 @@ export function createClaudeCodeAdapter(): AgentAdapter {
     displayName: "Claude Code",
     envVar: "CLAUDE_HOME",
     resolveConfigDir(options: ConfigResolutionOptions): string {
-      return options.configDir ?? process.env.CLAUDE_HOME ?? defaultToolHome("claude");
+      return options.configDir ?? process.env.CLAUDE_HOME ?? defaultHiddenHome("claude");
     },
     resolveInstallDestination(resource: HubResource, options: ConfigResolutionOptions): InstallDestination {
       const configDir = this.resolveConfigDir(options);

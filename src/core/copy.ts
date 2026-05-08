@@ -1,9 +1,10 @@
-import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
 import type { AgentAdapter, ConfigResolutionOptions } from "../adapters/types.js";
 import type { HubResource } from "./manifest.js";
 import { hashPath } from "./hash.js";
 import { managedManifestPath, readManagedManifest, writeManagedManifest, type ManagedResource } from "./managed-manifest.js";
+import { homeDirectory } from "./platform.js";
 
 export interface SyncOptions extends ConfigResolutionOptions {
   repoRoot: string;
@@ -98,8 +99,19 @@ export function syncResources(resources: HubResource[], adapter: AgentAdapter, o
       if (!existsSync(agentJsonPath)) {
         throw new Error(`Agent source ${sourcePath} must contain agent.json`);
       }
-      // Copy agent.json to destination (e.g., dev.json)
-      cpSync(agentJsonPath, destination.absolutePath);
+      
+      // Read, process, and write agent.json with expanded paths
+      const agentContent = readFileSync(agentJsonPath, "utf-8");
+      const agentJson = JSON.parse(agentContent);
+      
+      // Expand ~ to absolute home directory in resources array
+      if (Array.isArray(agentJson.resources)) {
+        agentJson.resources = agentJson.resources.map((res: string) => 
+          res.replace(/~\//g, homeDirectory().replace(/\\/g, "/") + "/")
+        );
+      }
+      
+      writeFileSync(destination.absolutePath, JSON.stringify(agentJson, null, 2), "utf-8");
 
       // Copy prompt files to same directory if they exist
       const agentName = basename(sourcePath);
