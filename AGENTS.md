@@ -37,14 +37,15 @@ Agent Hub 是一个零依赖的 Node.js CLI 工具，用于集中维护个人 AI
 3. **标注假设与风险**：把假设、外部依赖、失败风险写入计划
 4. **小步实施**：每次改动保持范围可控；不违反架构约束
 5. **行为变化必加测试**：新行为、新分支都要被测试覆盖
-6. **收尾验证**：运行 `node cli.js list` 确认 registry 正确；`node cli.js install <target>` 确认安装计划
+6. **收尾验证**：运行 `npm run format:check`、`node cli.js list`；用临时 `--config-dir` 运行安装预览
 7. **同步文档**：若架构或对外契约变更，更新 `ARCHITECTURE.md`
 8. **输出变更摘要**：交付时报告做了什么、为什么、权衡点
 
 ## 开发命令
 
 - 验证 registry：`node cli.js list`
-- 预览安装：`node cli.js install kiro`
+- 格式检查：`npm run format:check`
+- 预览安装：`node cli.js install kiro --config-dir /tmp/agent-hub-kiro`
 - 实际安装：`node cli.js install kiro --apply`
 - 查看状态：`node cli.js status kiro`
 - 交互式安装：`node cli.js install`

@@ -51,12 +51,13 @@
 
 ### Step 1: 创建需求目录
 
-创建目录 `docs/active/{需求名}/`，只创建两个文件：
+使用 Harness 脚本创建中任务目录：
 
-- `design.md`：基于 `docs/active/_template/design.md`
-- `plan.md`：基于 `docs/active/_template/plan.md`
+```bash
+node content/skills/harness-docs/scripts/create-requirement.ts <slug> medium
+```
 
-不要复制 `spec.md`。中任务默认没有产品规格层。
+脚本会创建 `docs/active/{slug}/design.md` 和 `docs/active/{slug}/plan.md`，并同步 `docs/active/index.md`。不要手工复制模板。中任务默认没有产品规格层。
 
 ### Step 2: 写 design.md
 
@@ -97,7 +98,13 @@
 
 ### Step 1: 创建需求目录
 
-将 `docs/active/_template/` 整个目录复制为 `docs/active/{需求名}/`。
+使用 Harness 脚本创建大任务目录：
+
+```bash
+node content/skills/harness-docs/scripts/create-requirement.ts <slug> large
+```
+
+脚本会创建 `docs/active/{slug}/spec.md`、`docs/active/{slug}/design.md` 和 `docs/active/{slug}/plan.md`，并同步 `docs/active/index.md`。不要手工复制模板。
 
 ### Step 2: 写 spec.md
 

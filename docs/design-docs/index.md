@@ -4,6 +4,7 @@
 
 | id | 主题 | status | owner | 适用范围 | 路径 |
 |----|------|--------|-------|----------|------|
+| arch-current-cli-source-of-truth | Current CLI Source Of Truth | verified | maintainer | 当前 CLI 架构、文档命令、CI smoke 验证 | `docs/design-docs/arch-current-cli-source-of-truth.md` |
 
 ## status 含义
 

@@ -1,5 +1,5 @@
 ---
-updated: 2026-04-26
+updated: 2026-05-10
 ---
 
 # 可靠性标准
@@ -10,24 +10,24 @@ Agent Hub 是本地 CLI，不提供线上服务，因此可靠性重点是可重
 
 | 服务 | 可用性 | 延迟 (p99) | 错误率 | 智能体检查方式 |
 |------|--------|-----------|--------|---------------|
-| CLI build | 本地可构建 | 不适用 | 0 个 TypeScript error | `npm run build` |
-| Unit tests | 测试可重复运行 | 不适用 | 0 个失败测试 | `npm test` |
-| Registry listing | 能列出所有有效资源 | < 1s（本地小仓库） | 0 个 manifest error | `node dist/cli.js list` |
-| Install dry-run | 不写目标也能展示计划 | < 1s（默认资源） | 0 个未解释冲突 | `node dist/cli.js install codex --dry-run` |
+| Format check | 文本格式一致 | 不适用 | 0 个格式错误 | `npm run format:check` |
+| Registry listing | 能列出所有有效资源 | < 1s（本地小仓库） | 0 个 registry load error | `node cli.js list` |
+| Install dry-run | 不写目标也能展示计划 | < 1s（默认资源） | 0 个 registry/path error | `node cli.js install codex --config-dir /tmp/agent-hub-codex` |
+| Status check | 能读取目标 manifest 或报告目录不存在 | < 1s | 0 个未捕获错误 | `node cli.js status codex --config-dir /tmp/agent-hub-codex` |
 | Doc health | Harness 文档结构有效 | 不适用 | 0 个 error | `node content/skills/harness-docs/scripts/lint-docs.ts` |
 
 ## 可观测性要求
 
 - CLI 错误必须包含失败资源、目标路径、manifest 路径或下一步建议。
-- destructive 操作必须可 dry-run，输出 planned/removed/copied 等明确状态。
-- 目标冲突、hash drift、source missing、destination missing 等状态要出现在 `status` 或 `doctor` 输出中。
+- 写入操作必须可预览或要求显式确认，输出目标路径和资源 ID。
+- `status` 当前只检查 manifest 记录的 destination 是否存在；hash drift、source missing、doctor 等能力尚未实现，不能在交付说明中声称存在。
 - 日志和错误信息不得输出密钥、token 或用户私有文件内容。
 
 ## 智能体如何验证可靠性
 
-- 构建与测试：`npm run build`、`npm test`。
-- 安装预览：`node dist/cli.js install codex --dry-run` 和需要时的 `install all --dry-run`。
-- 状态检查：使用临时 `--config-dir` 验证写入、更新、卸载，不直接污染真实用户配置。
+- 格式检查：`npm run format:check`。
+- 安装预览：`node cli.js install codex --config-dir /tmp/agent-hub-codex` 和需要时的 `node cli.js install all --config-dir /tmp/agent-hub-all`。
+- 状态检查：使用临时 `--config-dir` 验证 status 输出，不直接污染真实用户配置。
 - 文档健康：运行 Harness doc linter，确保 AGENTS 链接和占位符有效。
 
 ## 性能红线
@@ -35,9 +35,9 @@ Agent Hub 是本地 CLI，不提供线上服务，因此可靠性重点是可重
 | 操作 | 红线 | 强制执行方式 |
 |------|------|-------------|
 | Registry load | 不扫描 `content/` 全树推断资源 | registry 只读取 `registry/*.json` 中声明的 source |
-| Dry-run install | 不写目标文件 | tests 覆盖 dry-run operations 和 manifest 行为 |
-| Status check | 不修改目标 manifest | `status` 只读 manifest、source、destination |
-| Uninstall | 只删除 managed manifest 中记录的目标 | tests 覆盖 resource selection 和 dry-run |
+| Dry-run install | 不写目标文件 | CI smoke 覆盖 list 和 install 预览 |
+| Status check | 不修改目标 manifest | `status` 只读 manifest 和 destination |
+| Reset | 删除前需要明确确认 | 交互式 `yes` 确认或测试使用临时 `--config-dir` |
 
 ## 事件响应
 

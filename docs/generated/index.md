@@ -1,4 +1,4 @@
-最后生成: 2026-04-26
+最后生成: 2026-05-10
 
 # 自动生成文档注册表
 
@@ -8,7 +8,7 @@
 
 | 文档 | 数据源 | 提取方式 | 触发时机 |
 |------|--------|----------|----------|
-| `module-dependencies.md` | `src/**/*.ts`, `registry/*.json`, `content/` | 分析目录职责、核心 import 方向和资源流向，生成 Mermaid 依赖图 | bootstrap + 架构或模块边界变更后 |
+| `module-dependencies.md` | `cli.js`, `lib/*.mjs`, `registry/*.json`, `content/`, `scripts/*.mjs` | 分析目录职责、核心 import 方向和资源流向，生成 Mermaid 依赖图 | bootstrap + 架构或模块边界变更后 |
 
 ## 如何添加新的生成文档
 

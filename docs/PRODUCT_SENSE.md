@@ -1,5 +1,5 @@
 ---
-updated: 2026-04-26
+updated: 2026-05-10
 ---
 
 # 产品思维
@@ -12,7 +12,7 @@ updated: 2026-04-26
 
 ## 产品原则
 
-1. 安装安全优先于便利：遇到未受管目标冲突时默认失败，要求用户显式使用 `--force`。
+1. 安装安全优先于便利：当前安全边界是默认 dry-run 和 `--apply` 显式写入；未受管冲突保护尚未实现，不能在产品说明中声称已有 `--force`。
 2. 仓库内容优先于本机状态：`content/` 和 `registry/` 是资源真相，目标 config dir 只保存已安装副本和 managed manifest。
 3. 预览优先于执行：新增 destructive 或写入行为必须支持 dry-run 或等价的可审计输出。
 4. 多目标一致，差异收敛到 adapter：命令语义跨 Codex/Kiro/Claude Code 保持一致。
@@ -43,7 +43,7 @@ flowchart LR
 | 产品规格 | `docs/active/{需求}/spec.md` | 只在大任务中定义用户可见行为和边界 |
 | 设计文档 | `docs/active/{需求}/design.md` 或归档历史 `docs/archive/v0.1.0/plans/*-design.md` | 记录技术方案、影响范围、权衡 |
 | 执行计划 | `docs/active/{需求}/plan.md` 或归档历史 `docs/archive/v0.1.0/plans/*.md` | 拆分任务、定义验证命令、记录决策 |
-| 完成验证 | 命令输出和测试 | 更新计划状态或在交接中说明验证结果 |
+| 完成验证 | 命令输出、格式检查和文档 lint | 更新计划状态或在交接中说明验证结果 |
 
 ## 架构层不进入每功能流转
 

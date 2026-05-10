@@ -75,16 +75,15 @@
 计划中的 verify 字段优先使用这些命令，按变更范围选择最小充分集合：
 
 ```bash
-npm run build
-npm test
-node dist/cli.js list
-node dist/cli.js install codex --dry-run
-node dist/cli.js install all --dry-run
+npm run format:check
+node cli.js list
+node cli.js install codex --config-dir /tmp/agent-hub-codex
+node cli.js install all --config-dir /tmp/agent-hub-all
 node content/skills/harness-docs/scripts/lint-docs.ts
 ```
 
 涉及真实目标目录写入时，优先使用临时目录：
 
 ```bash
-node dist/cli.js install codex --config-dir /tmp/agent-hub-codex --dry-run
+node cli.js install codex --config-dir /tmp/agent-hub-codex
 ```

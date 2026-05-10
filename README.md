@@ -100,4 +100,4 @@ node cli.js reset kiro
 node cli.js list
 ```
 
-当前包含 5 个 skills 和 2 个 agents，支持 Kiro、Codex、Claude Code 三个目标。
+当前包含 16 个资源：5 个 skills、2 个 agents、6 个 prompts、3 个 hooks。Skills 支持 Kiro、Codex、Claude Code；agents、prompts、hooks 目前仅支持 Kiro。

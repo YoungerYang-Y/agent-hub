@@ -16,16 +16,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run project checks
-        run: npm run check
+      - name: Format check
+        run: npm run format:check
 
       - name: Verify CLI list
-        run: node dist/cli.js list
+        run: node cli.js list
 
       - name: Verify dry-run install
-        run: node dist/cli.js install codex --dry-run --config-dir "$RUNNER_TEMP/agent-hub-codex"
+        run: node cli.js install codex --config-dir "$RUNNER_TEMP/agent-hub-codex"

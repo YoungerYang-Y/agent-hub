@@ -9,6 +9,6 @@
 
 ## 如何添加新需求
 
-1. 复制 `_template/` 为 `{需求名}/`（如 `user-login/`）
-2. 填写 `spec.md` → `design.md` → `plan.md`，三个文件的 frontmatter `id` 使用相同 slug
-3. 在上方索引表中添加条目
+1. 使用 `content/skills/harness-docs/scripts/create-requirement.ts` 创建需求目录；不要手工复制模板。
+2. 中任务创建 `design.md` 与 `plan.md`；大任务创建 `spec.md`、`design.md` 与 `plan.md`。
+3. 按 `docs/guides/WORKFLOW.md` 填写并审查文档；脚本会同步上方索引。
