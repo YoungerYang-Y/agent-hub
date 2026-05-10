@@ -5,7 +5,8 @@
     "source": "content/hooks/validate-write.ts",
     "targets": ["kiro"],
     "default": true,
-    "description": "Pre-write validation hook for file operations."
+    "keywords": ["通用"],
+    "description": "文件操作前的验证钩子"
   },
   {
     "id": "post-write",
@@ -13,7 +14,8 @@
     "source": "content/hooks/post-write.ts",
     "targets": ["kiro"],
     "default": true,
-    "description": "Post-write processing hook for documentation updates."
+    "keywords": ["通用", "文档"],
+    "description": "文档更新后的处理钩子"
   },
   {
     "id": "format-code",
@@ -21,6 +23,7 @@
     "source": "content/hooks/format-code.ts",
     "targets": ["kiro"],
     "default": true,
-    "description": "Code formatting hook for response completion."
+    "keywords": ["通用"],
+    "description": "响应完成时的代码格式化钩子"
   }
 ]

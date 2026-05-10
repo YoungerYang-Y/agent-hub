@@ -5,7 +5,8 @@
     "source": "content/agents/developer",
     "targets": ["kiro"],
     "default": true,
-    "description": "Default development agent with common tools and permissions for daily development tasks."
+    "keywords": ["通用"],
+    "description": "默认开发 agent，配置常用工具和权限，适用于日常开发任务"
   },
   {
     "id": "reviewer",
@@ -13,6 +14,7 @@
     "source": "content/agents/reviewer",
     "targets": ["kiro"],
     "default": true,
-    "description": "Master review orchestrator: identifies review type (docs/code), delegates to specialized review agents, or performs code review."
+    "keywords": ["通用", "审查"],
+    "description": "总审查协调者，识别审查类型（文档/代码），调用专项审查 agent 或执行代码审查"
   }
 ]

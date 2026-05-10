@@ -5,7 +5,8 @@
     "source": "content/prompts/review-spec.md",
     "targets": ["kiro"],
     "default": true,
-    "description": "Quick spec.md document review using spec-reviewer skill."
+    "keywords": ["通用", "文档", "审查"],
+    "description": "使用 spec-reviewer skill 快速审查 spec.md 文档"
   },
   {
     "id": "review-design",
@@ -13,7 +14,8 @@
     "source": "content/prompts/review-design.md",
     "targets": ["kiro"],
     "default": true,
-    "description": "Quick design.md document review using design-reviewer skill."
+    "keywords": ["通用", "文档", "审查"],
+    "description": "使用 design-reviewer skill 快速审查 design.md 文档"
   },
   {
     "id": "review-plan",
@@ -21,7 +23,8 @@
     "source": "content/prompts/review-plan.md",
     "targets": ["kiro"],
     "default": true,
-    "description": "Quick plan.md document review using plan-reviewer skill."
+    "keywords": ["通用", "文档", "审查"],
+    "description": "使用 plan-reviewer skill 快速审查 plan.md 文档"
   },
   {
     "id": "harness-bootstrap",
@@ -29,7 +32,8 @@
     "source": "content/prompts/harness-bootstrap.md",
     "targets": ["kiro"],
     "default": true,
-    "description": "Initialize Harness documentation system for new projects."
+    "keywords": ["通用", "文档"],
+    "description": "为新项目初始化 Harness 文档系统"
   },
   {
     "id": "code-review",
@@ -37,7 +41,8 @@
     "source": "content/prompts/code-review.md",
     "targets": ["kiro"],
     "default": true,
-    "description": "Code review workflow using reviewer agent."
+    "keywords": ["通用", "审查"],
+    "description": "使用 reviewer agent 执行代码审查工作流"
   },
   {
     "id": "dev-workflow",
@@ -45,6 +50,7 @@
     "source": "content/prompts/dev-workflow.md",
     "targets": ["kiro"],
     "default": true,
-    "description": "Standard development workflow process."
+    "keywords": ["通用"],
+    "description": "标准开发工作流程"
   }
 ]

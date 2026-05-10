@@ -5,7 +5,8 @@
     "source": "content/skills/harness-docs",
     "targets": ["codex", "kiro", "claude-code"],
     "default": true,
-    "description": "Agent-first documentation system for AI-driven codebases."
+    "keywords": ["通用", "文档"],
+    "description": "AI 驱动代码库的文档系统"
   },
   {
     "id": "docs-reviewer",
@@ -13,7 +14,8 @@
     "source": "content/skills/docs-reviewer",
     "targets": ["codex", "kiro", "claude-code"],
     "default": true,
-    "description": "Docs review orchestrator: identifies doc type, runs all three review rounds, and produces a consolidated verdict."
+    "keywords": ["通用", "文档", "审查"],
+    "description": "文档审查编排器：识别文档类型，运行三轮审查，产出综合评审结果"
   },
   {
     "id": "spec-reviewer",
@@ -21,7 +23,8 @@
     "source": "content/skills/spec-reviewer",
     "targets": ["codex", "kiro", "claude-code"],
     "default": true,
-    "description": "Standalone spec.md reviewer: enforces boundary rules, Given/When/Then acceptance criteria, and Out-of-Scope completeness."
+    "keywords": ["通用", "文档", "审查"],
+    "description": "独立 spec.md 审查器：强制边界规则、Given/When/Then 验收标准、Out-of-Scope 完整性"
   },
   {
     "id": "design-reviewer",
@@ -29,7 +32,8 @@
     "source": "content/skills/design-reviewer",
     "targets": ["codex", "kiro", "claude-code"],
     "default": true,
-    "description": "Standalone design.md reviewer: checks three technical sub-sections, optional spec->design mapping, and verifiable constraints."
+    "keywords": ["通用", "文档", "审查"],
+    "description": "独立 design.md 审查器：检查三个技术子章节、可选 spec→design 映射、可验证约束"
   },
   {
     "id": "plan-reviewer",
@@ -37,6 +41,7 @@
     "source": "content/skills/plan-reviewer",
     "targets": ["codex", "kiro", "claude-code"],
     "default": true,
-    "description": "Standalone plan.md reviewer: validates task field completeness, executable verify commands, and optional design->plan mapping."
+    "keywords": ["通用", "文档", "审查"],
+    "description": "独立 plan.md 审查器：验证任务字段完整性、可执行验证命令、可选 design→plan 映射"
   }
 ]
