@@ -109,6 +109,7 @@ async function cmdInstall(opts) {
     if (opts.dryRun) console.log("  (dry-run)\n");
 
     const manifest = await loadManifest(dir);
+    if (!manifest.entries) manifest.entries = [];
 
     for (const entry of resources) {
       const src = join(REPO_ROOT, entry.source);
