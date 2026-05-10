@@ -1,6 +1,6 @@
 ---
 name: harness-docs
-description: Agent-first documentation system for AI-driven codebases — structured knowledge bases, progressive disclosure, executable constraints, and feedback loops that keep agents effective at scale.
+description: Use when bootstrapping, modifying, archiving, or maintaining Harness documentation systems in a repository.
 ---
 
 # Harness Engineering
@@ -30,13 +30,13 @@ Reference knowledge (principles, document roles, directory structure, anti-patte
 
 - Scenario 1: filled Harness documentation skeleton, `lint-docs.ts` passes
 - Scenario 2: updated Harness documents with timestamps refreshed
-- Scenario 3: drift report + fixes committed
+- Scenario 3: drift report + fixes prepared; commit only when the user explicitly asks or project policy requires it
 
 ## Done When
 
 - `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"` exits 0 (run from project root)
 - `grep -r '<!-- ' docs/ AGENTS.md ARCHITECTURE.md` returns no unfilled placeholders (Scenario 1 only)
-- All changes committed
+- Changes verified; commit only when the user explicitly asks or project policy requires it
 
 ## Installed Skill Directory
 
@@ -147,7 +147,7 @@ Docs to fill (only retained ones):
 
 **Execution mode** — pick before starting:
 - **≤ 6 docs to fill → Mode A**: single agent, 2-3 batched tool-call turns. ~50k tokens, 10-15 min.
-- **≥ 7 docs to fill → Mode B**: build a compact Project Brief (~2k tokens) from Step 2 output, fan out one subagent per doc. Each subagent gets brief + template only (NOT this skill). ~100k tokens, 2-4 min.
+- **≥ 7 docs to fill → Mode B**: when the active runtime and user instructions explicitly allow delegated agents, build a compact Project Brief (~2k tokens) from Step 2 output, then fan out one subagent per doc. Each subagent gets brief + template only (NOT this skill). If delegation is not allowed, use Mode A with batched edits.
 
 Constraint: if a tool-call batch fails with "too large", split it in half. Never fall back to one-file-at-a-time.
 
@@ -163,7 +163,7 @@ Read `docs/generated/index.md` registry. For each entry whose data source exists
 1. `node "$HARNESS_ENGINEERING_SKILL_DIR/scripts/lint-docs.ts"` — must exit 0
 2. `grep -r '<!-- ' docs/ AGENTS.md ARCHITECTURE.md` — every hit must be filled or section deleted
 3. Run through `checklists/quality-checklist.md` for full quality gate
-4. Commit as initial Harness commit
+4. Commit as initial Harness commit only when the user explicitly asks or project policy requires it
 
 ---
 
@@ -278,9 +278,9 @@ Checks: catalog ↔ file sync, generated doc freshness, completed plans in activ
   - Quality scores: re-evaluate based on current coverage
   - Generated docs: read `docs/generated/index.md` registry, regenerate stale entries from source, update timestamps
 
-### Step 3: Commit
+### Step 3: Handoff or Commit
 
-Open a single PR: `chore(docs): gardening — <date>`, group commits by category.
+If the user explicitly asks for a commit or PR, open a single PR: `chore(docs): gardening — <date>`, group commits by category. Otherwise, report the drift findings, fixes made, verification evidence, and any remaining manual decisions.
 
 ### Maintenance cadence reference
 

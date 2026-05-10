@@ -1,5 +1,5 @@
 ---
-name: docs-review-agent
+name: docs-reviewer
 description: Docs review orchestrator — identifies doc type (spec/design/plan), runs all three review rounds, and produces a consolidated verdict.
 ---
 
