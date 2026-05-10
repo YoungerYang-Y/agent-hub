@@ -227,7 +227,36 @@ async function cmdReset(target, configDirOverride) {
   console.log("\n✅ 重置完成");
 }
 
+function printWelcome() {
+  const E = "\x1B[";
+  const cyan = s => `${E}36m${s}${E}0m`;
+  const bold = s => `${E}1m${s}${E}0m`;
+  const dim = s => `${E}2m${s}${E}0m`;
+
+  const width = 51;
+  const border = "─".repeat(width);
+  // 中文等全角字符占 2 列，需按显示宽度计算
+  const dispWidth = s => [...s.replace(/\x1B\[[0-9;]*m/g, "")].reduce((n, c) => n + (c.codePointAt(0) > 0x2E7F ? 2 : 1), 0);
+  const pad = (s, w) => s + " ".repeat(Math.max(0, w - dispWidth(s)));
+
+  const lines = [
+    "",
+    cyan(`  ╭${border}╮`),
+    cyan("  │") + " ".repeat(width) + cyan("│"),
+    cyan("  │") + pad(`  ${bold("Agent Hub")} — AI 配置安装器`, width) + cyan("│"),
+    cyan("  │") + " ".repeat(width) + cyan("│"),
+    cyan("  │") + pad(`  ${dim("集中维护 skills / prompts / hooks / agents")}`, width) + cyan("│"),
+    cyan("  │") + pad(`  ${dim("并同步到本机 Kiro / Codex / Claude Code")}`, width) + cyan("│"),
+    cyan("  │") + " ".repeat(width) + cyan("│"),
+    cyan(`  ╰${border}╯`),
+    "",
+  ];
+  console.log(lines.join("\n"));
+}
+
 async function cmdInteractiveInstall() {
+  printWelcome();
+
   const entries = await loadRegistries();
   const names = Object.keys(adapters);
   const PLATFORM_ICONS = { kiro: "⚡", codex: "🧠", "claude-code": "🟣" };
@@ -235,10 +264,16 @@ async function cmdInteractiveInstall() {
   let step = 0;
   let target, dir, chosenKw, selected;
 
+  const step_label = (n, total, text) => {
+    const E = "\x1B[";
+    return `\n${E}2m  Step ${n}/${total}${E}0m  ${E}1m${text}${E}0m`;
+  };
+
   while (true) {
     if (step === 0) {
-      const platformLabels = names.map(n => `${PLATFORM_ICONS[n] || "•"} ${n}  (${adapters[n].default})`);
-      const result = await selectOne("🖥  选择安装平台:", platformLabels);
+      console.log(step_label(1, 3, "选择安装目标"));
+      const platformLabels = names.map(n => `${PLATFORM_ICONS[n] || "•"} ${n}  \x1B[2m${adapters[n].default}\x1B[0m`);
+      const result = await selectOne("", platformLabels);
       if (result === BACK) return;
       target = names[result];
       dir = configDir(adapters[target]);
@@ -251,8 +286,9 @@ async function cmdInteractiveInstall() {
         continue;
       }
 
-      console.log("");
-      const result = await selectMany("🏷  选择关注的技术栈 (不选则显示全部, Esc=返回):", allKeywords, []);
+      console.log(step_label(2, 3, "筛选技术栈关键词"));
+      console.log("  \x1B[2m不选则显示全部资源，Esc 返回上一步\x1B[0m");
+      const result = await selectMany("", allKeywords, []);
       if (result === BACK) {
         step = 0;
         continue;
@@ -270,16 +306,17 @@ async function cmdInteractiveInstall() {
         const items = resources.filter(e => e.type === type);
         const maxId = Math.max(...items.map(e => e.id.length));
         const labels = items.map(e => {
-          const star = e.default ? "★" : " ";
-          return `${e.id.padEnd(maxId)}  ${star}  ${e.description}`;
+          const star = e.default ? "\x1B[33m★\x1B[0m" : " ";
+          return `${e.id.padEnd(maxId)}  ${star}  \x1B[2m${e.description}\x1B[0m`;
         });
         const defaults =
           chosenKw && chosenKw.size > 0
             ? items.map((e, i) => ((e.keywords || []).some(k => chosenKw.has(k)) ? i : -1)).filter(i => i >= 0)
             : items.map((e, i) => (e.default ? i : -1)).filter(i => i >= 0);
 
-        console.log("");
-        const result = await selectMany(`${icon} 选择 ${type}s (${items.length}, Esc=返回):`, labels, defaults);
+        console.log(step_label(3, 3, `选择 ${icon} ${type}s`));
+        console.log("  \x1B[2mspace 切换选中，a 全选/全取消，Esc 返回\x1B[0m");
+        const result = await selectMany("", labels, defaults);
         if (result === BACK) {
           backed = true;
           break;
@@ -296,22 +333,24 @@ async function cmdInteractiveInstall() {
   }
 
   if (!selected || !selected.length) {
-    console.log("\n未选择任何资源。");
+    console.log("\n  \x1B[2m未选择任何资源，已退出。\x1B[0m\n");
     return;
   }
 
+  const E = "\x1B[";
   const types = [...new Set(selected.map(e => e.type))].sort();
-  console.log(`\n${"─".repeat(40)}`);
-  console.log(`📋 将安装 ${selected.length} 个资源到 ${dir}\n`);
+  console.log(`\n${E}2m  ${"─".repeat(48)}${E}0m`);
+  console.log(`  ${E}1m📦 安装计划${E}0m  ${E}36m${selected.length} 个资源${E}0m  →  ${E}2m${dir}${E}0m\n`);
   for (const type of types) {
     const items = selected.filter(e => e.type === type);
     if (!items.length) continue;
-    console.log(`  ${TYPE_ICONS[type] || "📦"} ${type}s (${items.length}):`);
-    for (const e of items) console.log(`     ${e.id}`);
-    console.log("");
+    console.log(`  ${TYPE_ICONS[type] || "📦"} ${E}1m${type}s${E}0m ${E}2m(${items.length})${E}0m`);
+    for (const e of items) console.log(`     ${E}2m·${E}0m ${e.id}`);
   }
+  console.log(`\n${E}2m  ${"─".repeat(48)}${E}0m\n`);
 
   await cmdInstall({ target, dryRun: false, _selected: selected });
+  console.log(`\n  ${E}32m✓${E}0m ${E}1m安装完成${E}0m\n`);
 }
 
 // ── CLI ──
