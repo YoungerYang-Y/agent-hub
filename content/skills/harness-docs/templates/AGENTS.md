@@ -45,6 +45,7 @@
 - 设计文档方法论（如何写 design.md）：`docs/guides/DESIGN.md`
 - 计划规范（如何拆解和执行任务）：`docs/guides/PLANS.md`
 - 各领域质量评分与改进优先级：`docs/QUALITY_SCORE.md`
+- 项目内基础 skills（高频任务操作手册）：`docs/skills/index.md`
 
 ### D. 参考与产物
 

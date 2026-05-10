@@ -28,7 +28,8 @@ console.log(`🚀 正在初始化 Harness Engineering 文档体系: ${TARGET}\n`
 const DIRS = [
   "docs", "docs/active", "docs/active/_template",
   "docs/archive", "docs/archive/migrated",
-  "docs/design-docs", "docs/generated", "docs/references",
+  "docs/design-docs", "docs/generated", "docs/references", "docs/skills",
+  "docs/skills/quality-gate",
 ];
 for (const dir of DIRS) mkdirSync(join(TARGET, dir), { recursive: true });
 
@@ -87,6 +88,15 @@ copyIfMissing(t("docs/design-docs/_template.md"), d("docs/design-docs/_template.
 console.log("\n📄 自动生成文档注册表:");
 copyIfMissing(t("docs/generated/index.md"), d("docs/generated/index.md"));
 copyIfMissing(t("docs/generated/_template.md"), d("docs/generated/_template.md"));
+
+// --- Project skills ---
+console.log("\n📄 项目内基础 skills:");
+for (const f of [
+  "index.md",
+  "quality-gate/SKILL.md",
+]) {
+  copyIfMissing(t(`docs/skills/${f}`), d(`docs/skills/${f}`));
+}
 
 // --- .gitkeep ---
 console.log("\n📄 占位文件 (.gitkeep):");

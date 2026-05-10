@@ -142,6 +142,7 @@ Docs to fill (only retained ones):
 - `docs/guides/SPEC.md` — adapt spec methodology examples to project domain
 - `docs/guides/DESIGN.md` — adapt design doc examples to project tech stack
 - `docs/guides/PLANS.md` — adapt planning conventions to project tooling
+- `docs/skills/` — adapt project-local skills for common agent workflows
 - Leave `index.md` catalogs empty (no entries yet)
 
 **Execution mode** — pick before starting:
