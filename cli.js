@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFile, writeFile, mkdir, cp, stat, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdir, cp, stat, rm, readdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -113,7 +113,11 @@ async function cmdInstall(opts) {
 
     for (const entry of resources) {
       const src = join(REPO_ROOT, entry.source);
-      const dest = join(dir, subdir(entry.type), entry.id);
+      // agents 在 Kiro 中必须平铺为 agents/<id>.json，不能用子目录
+      const dest =
+        entry.type === "agent"
+          ? join(dir, subdir(entry.type), `${entry.id}.json`)
+          : join(dir, subdir(entry.type), entry.id);
       const label = `  ${entry.type}/${entry.id}`;
 
       if (opts.dryRun) {
@@ -122,7 +126,15 @@ async function cmdInstall(opts) {
       }
 
       await mkdir(dirname(dest), { recursive: true });
-      await cp(src, dest, { recursive: true, force: true });
+      if (entry.type === "agent") {
+        await cp(join(src, "agent.json"), dest, { force: true });
+        // 复制同目录下的 .md 文件，供 agent.json 中 file://./xxx.md 引用
+        for (const f of await readdir(src)) {
+          if (f.endsWith(".md")) await cp(join(src, f), join(dirname(dest), f), { force: true });
+        }
+      } else {
+        await cp(src, dest, { recursive: true, force: true });
+      }
 
       const idx = manifest.entries.findIndex(e => e.id === entry.id && e.type === entry.type);
       const rec = {
